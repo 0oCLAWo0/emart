@@ -1,39 +1,46 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'package:emart/auth_controller.dart';
 import 'package:flutter/material.dart';
 
-class WelcomePage extends StatelessWidget {
-  final String userName;
+class SellerHomepage extends StatelessWidget {
+  const SellerHomepage({super.key});
 
-  const WelcomePage({super.key, required this.userName});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Welcome Page'),
+        title: const Text('userName'),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(
+              Icons.dehaze_rounded,
+              size: 20,
+            ),
+            tooltip: 'Show Snackbar',
+            onPressed: () {},
+          ),
+        ],
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              '!!! WELCOME $userName !!!',
+            const Text(
+              '!!! WELCOME userName !!!',
               style: TextStyle(
                 color: Colors.purple,
                 fontSize: 30,
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 30,
             ),
             TextButton(
               onPressed: () {
                 AuthController.instance.logOut();
               },
-              style: ButtonStyle(),
-              child: Center(
+              style: const ButtonStyle(),
+              child: const Center(
                 child: Text(
                   'Logout',
                   style: TextStyle(
@@ -50,3 +57,4 @@ class WelcomePage extends StatelessWidget {
     );
   }
 }
+// TODO Implement this library.

@@ -1,6 +1,8 @@
 // ignore_for_file: prefer_const_constructors, unnecessary_import
 import 'package:emart/auth_controller.dart';
 import 'package:emart/firebase_options.dart';
+import 'package:emart/screens/buyer_homepage.dart';
+import 'package:emart/screens/seller_homepage.dart';
 import 'package:emart/screens/loginpage.dart';
 import 'package:emart/screens/signuppage.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -27,10 +29,14 @@ void main() async {
         name: '/signup',
         page: () => SignUpPage(),
       ),
-      // GetPage(
-      //   name: '/welcome',
-      //   page: () => WelcomePage(),
-      // ),
+      GetPage(
+        name: '/buyerHomePage',
+        page: () => BuyerHomepage(),
+      ),
+      GetPage(
+        name: '/sellerHomePage',
+        page: () => SellerHomepage(),
+      ),
     ],
     home: LoginPage(),
   ));

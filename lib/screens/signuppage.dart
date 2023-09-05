@@ -1,14 +1,23 @@
 // ignore_for_file: prefer_const_constructors
-import 'package:emart/auth_controller.dart';
-import 'package:emart/common_widgets.dart';
-import 'package:flutter/material.dart';
 
-class SignUpPage extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:emart/common_widgets.dart'; // Import the common widget
+import 'package:emart/auth_controller.dart';
+
+class SignUpPage extends StatefulWidget {
+  const SignUpPage({Key? key}) : super(key: key);
+
+  @override
+  SignUpPageState createState() => SignUpPageState();
+}
+
+class SignUpPageState extends State<SignUpPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-
-  SignUpPage({super.key});
+  String dropdownValue = 'Seller'; // Initialize with the default value
+  CommonWidgets widgetBuilder = CommonWidgets();
+  bool obscureText = true;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +46,7 @@ class SignUpPage extends StatelessWidget {
           SingleChildScrollView(
             child: Container(
               padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).size.height * 0.43),
+                  top: MediaQuery.of(context).size.height * 0.38),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -45,26 +54,56 @@ class SignUpPage extends StatelessWidget {
                     margin: EdgeInsets.only(left: 35, right: 35),
                     child: Column(
                       children: [
-                        CustomTextField(
+                        widgetBuilder.buildDropDownButton(
+                            onChanged: (newValue) {
+                          setState(() {
+                            dropdownValue = newValue!;
+                          });
+                        }),
+                        SizedBox(height: 20,),
+                        widgetBuilder.buildTextField(
                           controller: nameController,
                           hintText: "Name",
                         ),
                         SizedBox(height: 20),
-                        CustomTextField(
+                        widgetBuilder.buildTextField(
                           controller: emailController,
                           hintText: "Email",
                         ),
                         SizedBox(height: 20),
-                        CustomTextField(
+                        TextField(
                           controller: passwordController,
-                          hintText: "Password",
-                          isPassword: true,
-                          helperText: "Password must contain special character",
-                          helperStyle: TextStyle(
-                            color: Color.fromARGB(255, 21, 111, 24),
+                          obscureText:
+                              obscureText, // Use the obscureText variable
+                          decoration: InputDecoration(
+                            hintText: "Password",
+                            helperText:
+                                "Password must contain atleat 6 characters",
+                            helperStyle: TextStyle(
+                              color: Color.fromARGB(255, 7, 60, 9),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                             fillColor: Colors.grey.shade200,
+                            filled: true,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                obscureText
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  obscureText = !obscureText;
+                                });
+                              },
+                            ),
                           ),
                         ),
-                        SizedBox(height: 40,),
+                        SizedBox(
+                          height: 40,
+                        ),
                         _buildActionButtons(context),
                       ],
                     ),
@@ -130,9 +169,10 @@ class SignUpPage extends StatelessWidget {
           .showSnackBar(SnackBar(content: Text("All fields are required")));
     } else {
       AuthController.instance.register(
-        nameController.text.trim(),
-        emailController.text.trim(),
-        passwordController.text.trim(),
+        user_name: nameController.text.trim(),
+        email_id: emailController.text.trim(),
+        user_password: passwordController.text.trim(),
+        dropdownValue: dropdownValue,
       );
     }
   }
@@ -155,3 +195,5 @@ class SignUpPage extends StatelessWidget {
     );
   }
 }
+
+// ignore: unused_element

@@ -4,105 +4,147 @@ import 'package:emart/auth_controller.dart';
 import 'package:emart/common_widgets.dart';
 import 'package:flutter/material.dart';
 
+List<String> list = <String>['Seller', 'Buyer'];
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
+  const LoginPage({Key? key}) : super(key: key);
+
+  @override
+  LoginPageState createState() => LoginPageState();
+}
+
+class LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-
-  LoginPage({super.key});
+  String? dropdownValue = "Seller";
+  bool obscureText = true;
+  CommonWidgets widgetBuilder = CommonWidgets();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/login.png'),
-                fit: BoxFit.cover,
-              ),
-            ),
+      body: Container(
+        height: double.infinity,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/login.png'),
+            fit: BoxFit.cover,
           ),
-          Container(
-            padding: EdgeInsets.only(left: 25, top: 130),
-            child: Text(
-              'Welcome !!',
-              style: TextStyle(
-                  color: Color.fromARGB(255, 208, 132, 102), fontSize: 33),
-            ),
-          ),
-          SingleChildScrollView(
-            child: Container(
-              padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).size.height * 0.29),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    margin: EdgeInsets.only(left: 35, right: 35),
-                    child: Column(
-                      children: [
-                        CircleAvatar(
-                          radius: 95,
-                          backgroundImage: AssetImage('assets/eMartLogo.png'),
-                          backgroundColor: Colors.transparent,
-                        ),
-                        SizedBox(height: 10),
-                        CustomTextField(
-                          controller: emailController,
-                          hintText: "Email",
-                        ),
-                        SizedBox(height: 20),
-                        CustomTextField(
-                          controller: passwordController,
-                          hintText: "Password",
-                          isPassword: true,
-                        ),
-                        SizedBox(height: 50),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Sign in',
-                              style: TextStyle(
-                                  color: Color.fromARGB(255, 248, 160, 87),
-                                  fontSize: 27, fontWeight: FontWeight.w500),
-                            ),
-                            CircleAvatar(
-                              radius: 30,
-                              backgroundColor:
-                                  Color.fromARGB(255, 248, 160, 87),
-                              child: IconButton(
-                                color: Color.fromARGB(255, 255, 255, 255),
-                                onPressed: () => _handleLogin(context),
+        ),
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              child: Container(
+                padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).size.height * 0.19),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      margin: EdgeInsets.only(left: 35),
+                      child: Text(
+                        'Welcome !!',
+                        style: TextStyle(
+                            color: Color.fromARGB(255, 208, 132, 102),
+                            fontSize: 33),
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(left: 30, right: 30, top: 10),
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 100,
+                            backgroundColor: Colors.transparent,
+                            child:
+                                Image(image: AssetImage('assets/eMartLogo.png')
+                                    // fit: BoxFit.cover,
+                                    ),
+                          ),
+                          widgetBuilder.buildDropDownButton(
+                              onChanged: (newValue) {
+                              setState(() {
+                              dropdownValue = newValue;
+                            });
+                          }),
+                          SizedBox(
+                            height: 25,
+                          ),
+                          widgetBuilder.buildTextField(
+                            controller: emailController,
+                            hintText: "Email",
+                          ),
+                          SizedBox(height: 20),
+                          TextField(
+                            controller: passwordController,
+                            obscureText:
+                                obscureText, // Use the obscureText variable
+                            decoration: InputDecoration(
+                              hintText: "Password",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              fillColor: Colors.grey.shade200,
+                              filled: true,
+                              suffixIcon: IconButton(
                                 icon: Icon(
-                                  Icons.arrow_forward,
-                                  size: 35,
+                                  obscureText
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
                                 ),
+                                onPressed: () {
+                                  setState(() {
+                                    obscureText = !obscureText;
+                                  });
+                                },
                               ),
                             ),
-                          ],
-                        ),
-                        SizedBox(height: 25),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _buildTextButton(context, 'Sign up',
-                                () => _navigateToSignup(context)),
-                            _buildTextButton(context, 'Forgot Password',
-                                () => _resetPassword(context)),
-                          ],
-                        ),
-                      ],
-                    ),
-                  )
-                ],
+                          ),
+                          SizedBox(height: 40),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Sign in',
+                                style: TextStyle(
+                                    color: Color.fromARGB(255, 248, 160, 87),
+                                    fontSize: 27,
+                                    fontWeight: FontWeight.w500),
+                              ),
+                              CircleAvatar(
+                                radius: 30,
+                                backgroundColor:
+                                    Color.fromARGB(255, 248, 160, 87),
+                                child: IconButton(
+                                  color: Color.fromARGB(255, 255, 255, 255),
+                                  onPressed: () => _handleLogin(context),
+                                  icon: Icon(
+                                    Icons.arrow_forward,
+                                    size: 35,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              _buildTextButton(context, 'Sign up',
+                                  () => _navigateToSignup(context)),
+                              _buildTextButton(context, 'Forgot Password',
+                                  () => _resetPassword(context)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -113,7 +155,7 @@ class LoginPage extends StatelessWidget {
           .showSnackBar(SnackBar(content: Text("All fields are required")));
     } else {
       AuthController.instance
-          .login(emailController.text.trim(), passwordController.text.trim());
+          .login(emailController.text.trim(), passwordController.text.trim(), dropdownValue!);
     }
   }
 
@@ -144,3 +186,7 @@ class LoginPage extends StatelessWidget {
     );
   }
 }
+
+// ignore: unused_element
+ 
+
