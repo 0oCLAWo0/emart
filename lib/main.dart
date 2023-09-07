@@ -1,7 +1,10 @@
-// ignore_for_file: prefer_const_constructors, unnecessary_import
+// ignore_for_file: prefer_const_constructors, unnecessary_import, avoid_print
+// ignore: unused_import
 import 'package:emart/auth_controller.dart';
 import 'package:emart/firebase_options.dart';
 import 'package:emart/screens/buyer_homepage.dart';
+import 'package:emart/screens/multi_splash_screen.dart';
+import 'package:emart/screens/onetime_splash_screen.dart';
 import 'package:emart/screens/seller_homepage.dart';
 import 'package:emart/screens/loginpage.dart';
 import 'package:emart/screens/signuppage.dart';
@@ -10,17 +13,25 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 void main() async {
+  print("Initializing");
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
-  // Register AuthController
+  print("inside main");
   Get.put(AuthController());
 
-  runApp(GetMaterialApp( 
-    initialRoute: '/login',
+  runApp(GetMaterialApp(
+    initialRoute: '/splash_screen',
     getPages: [
+      GetPage(
+        name: '/Multi_splash_screen',
+        page: () => MultiTimeSplashScreen(),
+      ),
+      GetPage(
+        name: '/splash_screen',
+        page: () => OneTimeSplashScreen(),
+      ),
       GetPage(
         name: '/login',
         page: () => LoginPage(),
@@ -38,6 +49,5 @@ void main() async {
         page: () => SellerHomepage(),
       ),
     ],
-    home: LoginPage(),
   ));
 }

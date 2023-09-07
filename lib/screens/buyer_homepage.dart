@@ -4,7 +4,6 @@ import 'package:emart/auth_controller.dart';
 import 'package:flutter/material.dart';
 
 class BuyerHomepage extends StatelessWidget {
-
   const BuyerHomepage({super.key});
 
   @override
@@ -19,8 +18,7 @@ class BuyerHomepage extends StatelessWidget {
               size: 20,
             ),
             tooltip: 'Show Snackbar',
-            onPressed: () {
-            },
+            onPressed: () {},
           ),
         ],
       ),

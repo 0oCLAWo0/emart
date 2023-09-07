@@ -1,29 +1,36 @@
-// ignore_for_file: prefer_const_constructors, unused_label, duplicate_ignore, non_constant_identifier_names
+// Import necessary packages and files
 
+// ignore_for_file: non_constant_identifier_names, avoid_print
+
+import 'package:emart/screens/signuppage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:emart/firestore_crud.dart';
 import 'package:emart/screens/loginpage.dart';
 import 'package:emart/screens/buyer_homepage.dart';
 import 'package:emart/screens/seller_homepage.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
-  class AuthController extends GetxController {
+class AuthController extends GetxController {
   static AuthController instance = Get.find();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  bool isLogin = true;
-  late String email;
+  FirestoreCRUD crud = FirestoreCRUD();
+  // late String email;
 
-  void _navigateToLoginPage() {
-    Get.offAll(() => LoginPage());
+  void navigateToLoginPage() {
+    Get.offAll(() => const LoginPage());
   }
 
-  void _navigateToBuyerHomepage() {
-    Get.offAll(() => BuyerHomepage());
+  void navigateToSignupPage() {
+    Get.offAll(() => const SignUpPage());
   }
 
-  void _navigateToSellerHomepage() {
-    Get.offAll(() => SellerHomepage());
+  void navigateToBuyerHomepage() {
+    Get.offAll(() => const BuyerHomepage());
+  }
+
+  void navigateToSellerHomepage() {
+    Get.offAll(() => const SellerHomepage());
   }
 
   Future<void> register(
@@ -70,19 +77,18 @@ import 'package:get/get.dart';
       titleText = "Registration Failed";
     }
     if (message != null && titleText != null) {
-      _showSnackbar("Registration error", message, titleText, isSuccess ? Colors.green :Colors.redAccent);
+      showSnackbar("Registration error", message, titleText,
+          isSuccess ? Colors.green : Colors.redAccent);
     }
     if (isSuccess) {
-      _navigateToLoginPage();
+      navigateToLoginPage();
     }
   }
 
   Future<void> login(
-      String email_id, String user_password, String dropdownValue) async {
+    String email_id, String user_password, String dropdownValue) async {
     String message = "";
     String titleText = "";
-    FirestoreCRUD crud = FirestoreCRUD();
-
     if (await crud.isEmailExists(email_id)) {
       try {
         UserCredential userCredential = await _auth.signInWithEmailAndPassword(
@@ -91,9 +97,9 @@ import 'package:get/get.dart';
           String accountType = await crud.getAccountType(email_id);
           if (accountType == dropdownValue) {
             if (accountType == "Buyer") {
-              _navigateToBuyerHomepage();
+              navigateToBuyerHomepage();
             } else {
-              _navigateToSellerHomepage();
+              navigateToSellerHomepage();
             }
           }
           // if account type not matching with choosen type
@@ -106,6 +112,7 @@ import 'package:get/get.dart';
         else {
           message = "Please Verify your email first";
           titleText = "Account Verification";
+          print(message);
 
           await userCredential.user!.sendEmailVerification();
         }
@@ -118,40 +125,71 @@ import 'package:get/get.dart';
     else {
       message = "Invalid Email";
       titleText = "Login Failed";
+      print(message);
     }
     if (titleText.isNotEmpty) {
-      _showSnackbar("Login", message, titleText, Colors.redAccent);
+      showSnackbar("Login", message, titleText, Colors.redAccent);
+    } else {
+      print("error");
     }
   }
 
   Future<void> resetPassword(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
-      _showSnackbar("Reset mail sent",
-          "Password Reset", "A password reset email has been sent to $email.", Colors.green);
+      showSnackbar("Reset mail sent", "Password Reset",
+          "A password reset email has been sent to $email.", Colors.green);
     } catch (e) {
-      _showSnackbar("Reset Failed", "Check your email id again", "Something Went Wrong", Colors.redAccent);
+      showSnackbar("Reset Failed", "Check your email id again",
+          "Something Went Wrong", Colors.redAccent);
     }
   }
 
   void logOut() async {
     await _auth.signOut();
-    _navigateToLoginPage();
+    navigateToLoginPage();
   }
 
-  void _showSnackbar(
+  void showSnackbar(
       String title, String message, String titleText, Color backgroundColor) {
     Get.snackbar(
       title,
       message,
+      duration: const Duration(seconds: 2),
       backgroundColor: backgroundColor,
       snackPosition: SnackPosition.BOTTOM,
       titleText: Text(
         titleText,
-        style: TextStyle(
+        style: const TextStyle(
           color: Colors.white,
         ),
       ),
     );
+  }
+
+  void showMessengerSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(duration: const Duration(seconds: 3), content: Text(message)));
+  }
+
+  void directUser() async {
+    User? user = _auth.currentUser;
+    if (user != null && user.email != null) {
+      String email = user.email!;
+      String accountType = await crud.getAccountType(email);
+      if (accountType == 'Buyer') {
+        Get.offAll(() => const BuyerHomepage(),
+        transition: Transition.fade,
+        );
+      } else {
+        Get.offAll(() => const SellerHomepage(),
+        transition: Transition.fade,
+        );
+      }
+    } else {
+      Get.offAll(() => const LoginPage(),
+      transition: Transition.fade,
+      );
+    }
   }
 }

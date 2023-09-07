@@ -1,8 +1,10 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, avoid_print
 
+import 'package:emart/screens/loginpage.dart';
 import 'package:flutter/material.dart';
 import 'package:emart/common_widgets.dart'; // Import the common widget
 import 'package:emart/auth_controller.dart';
+import 'package:get/get.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key}) : super(key: key);
@@ -18,6 +20,7 @@ class SignUpPageState extends State<SignUpPage> {
   String dropdownValue = 'Seller'; // Initialize with the default value
   CommonWidgets widgetBuilder = CommonWidgets();
   bool obscureText = true;
+  bool isButtonPressed = false;
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +63,9 @@ class SignUpPageState extends State<SignUpPage> {
                             dropdownValue = newValue!;
                           });
                         }),
-                        SizedBox(height: 20,),
+                        SizedBox(
+                          height: 20,
+                        ),
                         widgetBuilder.buildTextField(
                           controller: nameController,
                           hintText: "Name",
@@ -85,7 +90,7 @@ class SignUpPageState extends State<SignUpPage> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
-                             fillColor: Colors.grey.shade200,
+                            fillColor: Colors.grey.shade200,
                             filled: true,
                             suffixIcon: IconButton(
                               icon: Icon(
@@ -123,11 +128,13 @@ class SignUpPageState extends State<SignUpPage> {
         _buildActionButton(
           context,
           'Sign up',
-          () => _handleSignUp(context),
+          () {
+            isButtonPressed ? null : _handleButtonTap(() => _handleSignUp(context));
+          },
           Color(0xff4c505b),
         ),
         SizedBox(height: 20),
-        _buildTextButton(context, 'Sign in', () => _navigateToLogin(context)),
+        _buildTextButton(context, 'Sign in', () => Get.offAll(() => LoginPage()),),
       ],
     );
   }
@@ -145,16 +152,20 @@ class SignUpPageState extends State<SignUpPage> {
             color: backgroundColor,
           ),
         ),
-        CircleAvatar(
-          radius: 30,
-          backgroundColor: backgroundColor,
-          child: IconButton(
-            color: Color.fromARGB(255, 254, 254, 254),
-            onPressed: onPressed,
-            icon: Icon(
-              Icons.arrow_forward,
-              size: 35,
-            ),
+        GestureDetector(
+          onTap: onPressed,
+          child: CircleAvatar(
+            radius: 30,
+            backgroundColor: Color(0xff4c505b),
+            child: isButtonPressed
+                ? CircularProgressIndicator(
+                    color: Color.fromARGB(255, 225, 235, 235),
+                  )
+                : Icon(
+                    Icons.arrow_forward,
+                    color: Colors.white,
+                    size: 35,
+                  ),
           ),
         ),
       ],
@@ -165,8 +176,8 @@ class SignUpPageState extends State<SignUpPage> {
     if (nameController.text.isEmpty ||
         emailController.text.isEmpty ||
         passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("All fields are required")));
+      AuthController.instance
+          .showMessengerSnackBar(context, "All fields are required");
     } else {
       AuthController.instance.register(
         user_name: nameController.text.trim(),
@@ -177,8 +188,15 @@ class SignUpPageState extends State<SignUpPage> {
     }
   }
 
-  void _navigateToLogin(BuildContext context) {
-    Navigator.pushNamed(context, '/login');
+  Future<void> _handleButtonTap(Function name) async {
+    setState(() {
+      isButtonPressed = true;
+    });
+    await name();
+    await Future.delayed(Duration(seconds: 4)); // Wait for 2 seconds
+    setState(() {
+      isButtonPressed = false;
+    });
   }
 
   Widget _buildTextButton(

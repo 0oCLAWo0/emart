@@ -2,7 +2,9 @@
 
 import 'package:emart/auth_controller.dart';
 import 'package:emart/common_widgets.dart';
+import 'package:emart/screens/signuppage.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 List<String> list = <String>['Seller', 'Buyer'];
 
@@ -19,6 +21,7 @@ class LoginPageState extends State<LoginPage> {
   String? dropdownValue = "Seller";
   bool obscureText = true;
   CommonWidgets widgetBuilder = CommonWidgets();
+  bool isButtonPressed = false;
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +67,7 @@ class LoginPageState extends State<LoginPage> {
                           ),
                           widgetBuilder.buildDropDownButton(
                               onChanged: (newValue) {
-                              setState(() {
+                            setState(() {
                               dropdownValue = newValue;
                             });
                           }),
@@ -112,15 +115,21 @@ class LoginPageState extends State<LoginPage> {
                                     fontSize: 27,
                                     fontWeight: FontWeight.w500),
                               ),
-                              CircleAvatar(
-                                radius: 30,
-                                backgroundColor:
-                                    Color.fromARGB(255, 248, 160, 87),
-                                child: IconButton(
-                                  color: Color.fromARGB(255, 255, 255, 255),
-                                  onPressed: () => _handleLogin(context),
-                                  icon: Icon(
+                              GestureDetector(
+                                onTap: isButtonPressed
+                                    ? null
+                                    : () => _handleButtonTap(() async {
+                                           _handleLogin(context);
+                                        }),
+                                child: CircleAvatar(
+                                  radius: 30,
+                                  backgroundColor:
+                                      Color.fromARGB(255, 248, 160, 87),
+                                  child: isButtonPressed ? CircularProgressIndicator(
+                                    color:Color.fromARGB(255, 225, 235, 235),
+                                  ) : Icon(
                                     Icons.arrow_forward,
+                                    color: Colors.white,
                                     size: 35,
                                   ),
                                 ),
@@ -130,10 +139,19 @@ class LoginPageState extends State<LoginPage> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              _buildTextButton(context, 'Sign up',
-                                  () => _navigateToSignup(context)),
-                              _buildTextButton(context, 'Forgot Password',
-                                  () => _resetPassword(context)),
+                              _buildTextButton(
+                                context,
+                                'Sign up',
+                                () => Get.to(() => SignUpPage()),
+                              ), // Replace NextPage with your destination page
+                              _buildTextButton(context, 'Forgot Password', () {
+                                if (isButtonPressed) {
+                                  return;
+                                }
+                                _handleButtonTap(() async {
+                                   _resetPassword(context);
+                                });
+                              }),
                             ],
                           ),
                         ],
@@ -151,22 +169,18 @@ class LoginPageState extends State<LoginPage> {
 
   void _handleLogin(BuildContext context) {
     if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("All fields are required")));
-    } else {
       AuthController.instance
-          .login(emailController.text.trim(), passwordController.text.trim(), dropdownValue!);
+          .showMessengerSnackBar(context, "All fields are Required");
+    } else {
+      AuthController.instance.login(emailController.text.trim(),
+          passwordController.text.trim(), dropdownValue!);
     }
-  }
-
-  void _navigateToSignup(BuildContext context) {
-    Navigator.pushNamed(context, '/signup');
   }
 
   void _resetPassword(BuildContext context) {
     if (emailController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Please enter your email first.")));
+      AuthController.instance
+          .showMessengerSnackBar(context, "Please enter your email first.");
     } else {
       AuthController.instance.resetPassword(emailController.text.trim());
     }
@@ -185,8 +199,15 @@ class LoginPageState extends State<LoginPage> {
       ),
     );
   }
+
+  Future<void> _handleButtonTap(Function name) async {
+    setState(() {
+      isButtonPressed = true;
+    });
+    await name();
+    await Future.delayed(Duration(seconds: 4)); // Wait for 2 seconds
+    setState(() {
+      isButtonPressed = false;
+    });
+  }
 }
-
-// ignore: unused_element
- 
-
