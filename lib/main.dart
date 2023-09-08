@@ -2,10 +2,12 @@
 // ignore: unused_import
 import 'package:emart/auth_controller.dart';
 import 'package:emart/firebase_options.dart';
+import 'package:emart/screens/Seller/registration.dart';
+import 'package:emart/screens/Seller/settings.dart';
 import 'package:emart/screens/buyer_homepage.dart';
 import 'package:emart/screens/multi_splash_screen.dart';
 import 'package:emart/screens/onetime_splash_screen.dart';
-import 'package:emart/screens/seller_homepage.dart';
+import 'package:emart/screens/Seller/seller_homepage.dart';
 import 'package:emart/screens/loginpage.dart';
 import 'package:emart/screens/signuppage.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -47,6 +49,14 @@ void main() async {
       GetPage(
         name: '/sellerHomePage',
         page: () => SellerHomepage(),
+      ),
+       GetPage(
+        name: '/buisnessRegistration',
+        page: () => BuisnessRegistraion(),
+      ),
+      GetPage(
+        name: '/sellerSettings',
+        page: () => SellerSettings(),
       ),
     ],
   ));

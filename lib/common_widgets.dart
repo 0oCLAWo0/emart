@@ -1,12 +1,19 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:marquee/marquee.dart';
 
 class CommonWidgets {
   List<String> itemList = <String>['Seller', 'Buyer'];
   String dropdownValue = "Seller";
+  late String? imagePath; // Pass the selected image path to this widget
 
-  Widget buildTextField({
+  Widget buildTextField(
+    {
     required TextEditingController controller,
-    required String hintText,}) {
+    required String hintText,
+  }) {
     return TextField(
       controller: controller,
       obscureText: false,
@@ -14,7 +21,7 @@ class CommonWidgets {
         hintText: hintText,
         fillColor: Colors.grey.shade200,
         filled: true,
-         border: OutlineInputBorder(
+        border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
         ),
       ),
@@ -50,6 +57,49 @@ class CommonWidgets {
           }).toList(),
         ),
       ),
+    );
+  }
+
+  Future<String?> getImageFromUser() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      // User selected an image
+      print("Selected image path: ${pickedFile.path}");
+      return pickedFile.path;
+      // You can now do something with the selected image path, e.g., display it in an Image widget.
+    } else {
+      print("No image selected");
+      return null;
+    }
+  }
+
+  Widget getTitleText(String message, {Color color =  Colors.black}) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final text = message;
+        final textPainter = TextPainter(
+          text: TextSpan(text: text, style: TextStyle(fontSize: 20, color: color)),
+          textDirection: TextDirection.ltr,
+        )..layout(maxWidth: double.infinity);
+
+        if (textPainter.width > constraints.maxWidth) {
+          return SizedBox(
+            height: kToolbarHeight,
+            child: Marquee(
+              text: text,
+              scrollAxis: Axis.horizontal,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              blankSpace: 15.0,
+              velocity: 50.0,
+              startPadding: 10.0,
+            ),
+          );
+        } else {
+          return Text(text, style: TextStyle(fontSize: 20, color: color));
+        }
+      },
     );
   }
 }

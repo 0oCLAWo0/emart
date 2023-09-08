@@ -1,4 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 
 class FirestoreCRUD {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -51,4 +58,77 @@ class FirestoreCRUD {
 
     return result.docs[0]['accountType'];
   }
+
+  Future<String?> getUserDP(String email) async {
+    try {
+      QuerySnapshot result = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
+
+      if (result.docs.isNotEmpty) {
+        final userDocument = result.docs[0].data() as Map<String, dynamic>;
+
+        if (userDocument.containsKey('userDP')) {
+          return userDocument['userDP'] as String?;
+        }
+      }
+
+      return null; // Return null if the user or userDP field doesn't exist
+    } catch (e) {
+      print("Error fetching userDP: $e");
+      return null;
+    }
+  }
+
+
+  Future<String?> uploadFileToStorage(File file, String storagePath) async {
+    try {
+      final Reference storageReference =
+          FirebaseStorage.instance.ref().child(storagePath);
+
+      final UploadTask uploadTask = storageReference.putFile(file);
+
+      final TaskSnapshot downloadUrl = await uploadTask.whenComplete(() {});
+      final String fileUrl = await downloadUrl.ref.getDownloadURL();
+
+      return fileUrl; // Returns the URL of the uploaded file
+    } catch (e) {
+      print("Error uploading file: $e");
+      return null;
+    }
+  }
+
+  Future<String?> getFileDownloadUrl(String storagePath) async {
+    try {
+      final Reference storageReference =
+          FirebaseStorage.instance.ref().child(storagePath);
+
+      final String fileUrl = await storageReference.getDownloadURL();
+
+      return fileUrl; // Returns the URL of the file
+    } catch (e) {
+      print("Error retrieving file: $e");
+      return null;
+    }
+  }
+
+  Future<bool> deleteFile(String storagePath) async {
+    try {
+      // Create a Firebase Storage reference to the file you want to delete.
+      Reference storageReference =
+          FirebaseStorage.instance.ref().child(storagePath);
+
+      // Delete the file.
+      await storageReference.delete();
+
+      print('File deleted successfully');
+      return true;
+    } catch (e) {
+      print('Error deleting file: $e');
+      return false;
+    }
+  }
+
 }

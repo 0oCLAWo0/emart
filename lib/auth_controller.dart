@@ -9,7 +9,7 @@ import 'package:get/get.dart';
 import 'package:emart/firestore_crud.dart';
 import 'package:emart/screens/loginpage.dart';
 import 'package:emart/screens/buyer_homepage.dart';
-import 'package:emart/screens/seller_homepage.dart';
+import 'package:emart/screens/Seller/seller_homepage.dart';
 
 class AuthController extends GetxController {
   static AuthController instance = Get.find();
