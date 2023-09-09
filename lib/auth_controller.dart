@@ -2,6 +2,7 @@
 
 // ignore_for_file: non_constant_identifier_names, avoid_print
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:emart/screens/signuppage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -51,10 +52,14 @@ class AuthController extends GetxController {
         await _auth.createUserWithEmailAndPassword(
             email: email_id, password: user_password);
         // create in firestore
+        // Get the current date and time
+        Timestamp currentTime = Timestamp.now();
         await crud.addData('users', {
           'email': email_id,
           'name': user_name,
-          'accountType': dropdownValue
+          'accountType': dropdownValue,
+          'signupTimeStamp' : currentTime,
+          'registrationStatus' : 'onRequest',
         });
 
         // get currrent user
@@ -86,13 +91,14 @@ class AuthController extends GetxController {
   }
 
   Future<void> login(
-    String email_id, String user_password, String dropdownValue) async {
+      String email_id, String user_password, String dropdownValue) async {
     String message = "";
     String titleText = "";
     if (await crud.isEmailExists(email_id)) {
       try {
         UserCredential userCredential = await _auth.signInWithEmailAndPassword(
             email: email_id, password: user_password);
+        print("passed");
         if (userCredential.user!.emailVerified) {
           String accountType = await crud.getAccountType(email_id);
           if (accountType == dropdownValue) {
@@ -115,8 +121,10 @@ class AuthController extends GetxController {
           print(message);
 
           await userCredential.user!.sendEmailVerification();
+          print('passed again');
         }
       } catch (e) {
+        print("exception caught : ${e.toString()}");
         message = "Check your password again";
         titleText = "Something Went Wrong";
       }
@@ -151,7 +159,8 @@ class AuthController extends GetxController {
   }
 
   void showSnackbar(
-      String title, String message, String titleText, Color backgroundColor) {
+      String title, String message, String titleText, Color backgroundColor, {Color textColor = Colors.white}) {
+    print("inside snackbar function");
     Get.snackbar(
       title,
       message,
@@ -160,8 +169,8 @@ class AuthController extends GetxController {
       snackPosition: SnackPosition.BOTTOM,
       titleText: Text(
         titleText,
-        style: const TextStyle(
-          color: Colors.white,
+        style:  TextStyle(
+          color: textColor,
         ),
       ),
     );
@@ -174,21 +183,24 @@ class AuthController extends GetxController {
 
   void directUser() async {
     User? user = _auth.currentUser;
-    if (user != null && user.email != null) {
+    if (user != null && user.email != null && user.emailVerified) {
       String email = user.email!;
       String accountType = await crud.getAccountType(email);
       if (accountType == 'Buyer') {
-        Get.offAll(() => const BuyerHomepage(),
-        transition: Transition.fade,
+        Get.offAll(
+          () => const BuyerHomepage(),
+          transition: Transition.fade,
         );
       } else {
-        Get.offAll(() => const SellerHomepage(),
-        transition: Transition.fade,
+        Get.offAll(
+          () => const SellerHomepage(),
+          transition: Transition.fade,
         );
       }
     } else {
-      Get.offAll(() => const LoginPage(),
-      transition: Transition.fade,
+      Get.offAll(
+        () => const LoginPage(),
+        transition: Transition.fade,
       );
     }
   }

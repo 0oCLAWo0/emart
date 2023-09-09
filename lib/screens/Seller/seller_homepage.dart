@@ -9,23 +9,25 @@ import 'package:emart/screens/Seller/settings.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:marquee/marquee.dart';
 
 class SellerHomepage extends StatefulWidget {
   const SellerHomepage({Key? key}) : super(key: key);
 
   @override
-  State<SellerHomepage> createState() => _SellerHomepageState();
+  State<SellerHomepage> createState() => SellerHomepageState();
 }
 
-class _SellerHomepageState extends State<SellerHomepage> {
+class SellerHomepageState extends State<SellerHomepage> {
   bool isMenuOpen = false; // Track whether the icon list is open or not.
+  bool isUserRegistered = false;
+  bool isButtonPressed = false;
+  String registrationStatus = 'onRequest';
   FirebaseAuth auth = FirebaseAuth.instance;
   User? user;
   FirestoreCRUD crud = FirestoreCRUD();
   CommonWidgets common = CommonWidgets();
 
-  ImageProvider userDP = const AssetImage('assets/userDP.jpg');
+  static ImageProvider userDP = const AssetImage('assets/userDP2.gif');
   Color orange = const Color.fromARGB(255, 183, 98, 45);
   Color highLighter = const Color.fromARGB(255, 160, 255, 223);
   Color blueGrey = Colors.blueGrey;
@@ -35,15 +37,26 @@ class _SellerHomepageState extends State<SellerHomepage> {
   void initState() {
     super.initState();
     fetchUserData();
+    user = auth.currentUser;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      registrationStatus = (await crud.getRegistrationStatus(user!.email!));
+      setState(() {
+        isUserRegistered = registrationStatus == 'verified' ? true : false;
+      });
+    });
   }
 
   Future<void> fetchUserData() async {
+    print("fetching dp");
     user = auth.currentUser;
     String? storagePath = 'user_profile/${user!.uid}/userDP';
     String? userDPUrl = await crud.getFileDownloadUrl(storagePath);
+    print("fetched");
     if (userDPUrl != null) {
       setState(() {
+        print("setting dp state");
         userDP = NetworkImage(userDPUrl);
+        print("set");
       });
     }
     // Trigger a rebuild to display the fetched data
@@ -54,7 +67,6 @@ class _SellerHomepageState extends State<SellerHomepage> {
 // Declare _timer as Timer? (nullable)
     return Scaffold(
       appBar: createAppbar(user),
-
       body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -105,7 +117,7 @@ class _SellerHomepageState extends State<SellerHomepage> {
                         String storagePath = 'user_profile/${user!.uid}/userDP';
                         crud.deleteFile(storagePath);
                         setState(() {
-                          userDP = const AssetImage('assets/userDP.jpg');
+                          userDP = const AssetImage('assets/userDP2.gif');
                         });
                       },
                       onLongPress: () async {
@@ -124,7 +136,6 @@ class _SellerHomepageState extends State<SellerHomepage> {
                       child: CircleAvatar(
                         radius: 40,
                         backgroundImage: userDP,
-                        backgroundColor: Colors.black,
                       ),
                     ),
                   ),
@@ -141,25 +152,36 @@ class _SellerHomepageState extends State<SellerHomepage> {
             CreateListTile(
                 buttonIcon: Icons.settings,
                 title: 'Setting',
+                disableButton: false,
                 onTap: () {
                   Get.to(() => const SellerSettings());
                 }),
             CreateListTile(
-                buttonIcon: Icons.inventory, title: 'Inventory', onTap: () {}),
+                buttonIcon: Icons.inventory,
+                title: 'Inventory',
+                disableButton: !isUserRegistered,
+                message: 'Registration Pending',
+                onTap: () {}),
             CreateListTile(
-                buttonIcon: Icons.history,
-                title: 'Order History',
-                onTap: () {}),    
+              buttonIcon: Icons.history,
+              title: 'Order History',
+              disableButton: !isUserRegistered,
+              message: 'Registration Pending',
+              onTap: () {},
+            ),
             CreateListTile(
                 buttonIcon: Icons.business_sharp,
                 title: 'Registration',
+                disableButton: registrationStatus != 'onRequest' ? true : false,
+                message:
+                    'Verification Status : $registrationStatus\n\nCan\'t Register Again',
                 onTap: () {
-                  Get.to(
-                    () => const BuisnessRegistraion());
+                  Get.to(() => const BuisnessRegistraion());
                 }),
             CreateListTile(
                 buttonIcon: Icons.logout,
                 title: 'Logout',
+                disableButton: false,
                 onTap: () {
                   AuthController.instance.logOut();
                 }),
@@ -170,12 +192,14 @@ class _SellerHomepageState extends State<SellerHomepage> {
   }
 
   // ignore: non_constant_identifier_names
-  ListTile CreateListTile({
+  Widget CreateListTile({
+    required bool disableButton,
     required VoidCallback onTap,
     required IconData buttonIcon,
     required String title,
     double hPad = 16.0,
     double vPad = 0.0,
+    String message = '',
   }) {
     return ListTile(
       contentPadding: EdgeInsets.symmetric(
@@ -183,16 +207,30 @@ class _SellerHomepageState extends State<SellerHomepage> {
       leading: Icon(
         buttonIcon,
         size: 26,
-        color: iconColor,
+        color: !disableButton ? iconColor : Colors.white,
       ), // Replace with your first icon.
       title: Text(
         title,
         style: TextStyle(
-          color: iconColor,
+          color: !disableButton ? iconColor : Colors.white,
           fontSize: 18,
         ),
       ),
-      onTap: onTap,
+      onTap: disableButton
+          ? () async {
+              if (isButtonPressed) {
+                return;
+              }
+              setState(() {
+                isButtonPressed = true;
+              });
+              AuthController.instance.showMessengerSnackBar(context, message);
+              await Future.delayed(Duration(seconds: 2));
+              setState(() {
+                isButtonPressed = false;
+              });
+            }
+          : onTap,
     );
   }
 

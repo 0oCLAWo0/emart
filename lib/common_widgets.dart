@@ -1,16 +1,16 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:location/location.dart';
 import 'package:marquee/marquee.dart';
 
 class CommonWidgets {
-  List<String> itemList = <String>['Seller', 'Buyer'];
+  List<String> options = <String>['Seller', 'Buyer'];
   String dropdownValue = "Seller";
   late String? imagePath; // Pass the selected image path to this widget
 
-  Widget buildTextField(
-    {
+  Widget buildTextField({
     required TextEditingController controller,
     required String hintText,
   }) {
@@ -30,7 +30,9 @@ class CommonWidgets {
 
   Widget buildDropDownButton({
     required void Function(String?) onChanged,
+    List<String>? itemList,
   }) {
+    itemList = itemList ?? options;
     return Container(
       height: 30,
       width: 80,
@@ -75,12 +77,13 @@ class CommonWidgets {
     }
   }
 
-  Widget getTitleText(String message, {Color color =  Colors.black}) {
+  Widget getTitleText(String message, {Color color = Colors.black, double fontSize = 20}) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final text = message;
         final textPainter = TextPainter(
-          text: TextSpan(text: text, style: TextStyle(fontSize: 20, color: color)),
+          text: TextSpan(
+              text: text, style: TextStyle(fontSize: fontSize, color: color)),
           textDirection: TextDirection.ltr,
         )..layout(maxWidth: double.infinity);
 
@@ -97,9 +100,26 @@ class CommonWidgets {
             ),
           );
         } else {
-          return Text(text, style: TextStyle(fontSize: 20, color: color));
+          return Text(text, style: TextStyle(fontSize: fontSize, color: color));
         }
       },
     );
   }
+
+  // fetch user's current location
+  Future<LatLng?> getCurrentLocation() async {
+    print("started");
+    Location location = Location();
+    LocationData currentLocationData;
+
+    try {
+      print("getting");
+      currentLocationData = await location.getLocation();
+      return LatLng(
+          currentLocationData.latitude!, currentLocationData.longitude!);
+    } catch (e) {
+      return null;
+    }
+  }
+  
 }

@@ -1,11 +1,7 @@
-import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
-import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
 
 class FirestoreCRUD {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -59,6 +55,16 @@ class FirestoreCRUD {
     return result.docs[0]['accountType'];
   }
 
+  Future<String> getRegistrationStatus(String email) async {
+    QuerySnapshot result = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .limit(1)
+        .get();
+
+    return result.docs[0]['registrationStatus'];
+  }
+
   Future<String?> getUserDP(String email) async {
     try {
       QuerySnapshot result = await FirebaseFirestore.instance
@@ -81,7 +87,6 @@ class FirestoreCRUD {
       return null;
     }
   }
-
 
   Future<String?> uploadFileToStorage(File file, String storagePath) async {
     try {
@@ -131,4 +136,23 @@ class FirestoreCRUD {
     }
   }
 
+  Future<bool> addFieldsForEmail(
+      String email, Map<String, dynamic> newFields) async {
+    try {
+      QuerySnapshot users = await _firestore
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .get();
+
+      if (users.docs.isNotEmpty) {
+        String userId = users.docs[0].id;
+        await _firestore.collection('users').doc(userId).update(newFields);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('Error adding fields: $e');
+      return false;
+    }
+  }
 }
