@@ -1,4 +1,5 @@
-
+import 'package:emart/firestore_crud.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
@@ -9,6 +10,8 @@ class CommonWidgets {
   List<String> options = <String>['Seller', 'Buyer'];
   String dropdownValue = "Seller";
   late String? imagePath; // Pass the selected image path to this widget
+  FirebaseAuth auth = FirebaseAuth.instance;
+  FirestoreCRUD crud = FirestoreCRUD();
 
   Widget buildTextField({
     required TextEditingController controller,
@@ -77,7 +80,8 @@ class CommonWidgets {
     }
   }
 
-  Widget getTitleText(String message, {Color color = Colors.black, double fontSize = 20}) {
+  Widget getTitleText(String message,
+      {Color color = Colors.black, double fontSize = 20}) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final text = message;
@@ -106,6 +110,28 @@ class CommonWidgets {
     );
   }
 
+  // fetch dp
+  Future<ImageProvider> fetchUserDP() async {
+    User? user = auth.currentUser;
+    user = auth.currentUser;
+    ImageProvider userDP;
+    String? storagePath = 'user_profile/${user!.uid}/userDP';
+    try {
+      String? userDPUrl =
+          await crud.getFileDownloadUrl(storagePath, user!.email!);
+      if (userDPUrl != null) {
+        userDP = NetworkImage(userDPUrl);
+      } else {
+        userDP = AssetImage('assets/userDP2.gif');
+      }
+    } catch (e) {
+      print("DP NOT FOUND");
+      userDP = AssetImage('assets/userDP2.gif');
+    }
+
+    return userDP;
+  }
+
   // fetch user's current location
   Future<LatLng?> getCurrentLocation() async {
     print("started");
@@ -121,5 +147,4 @@ class CommonWidgets {
       return null;
     }
   }
-  
 }

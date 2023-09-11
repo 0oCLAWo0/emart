@@ -65,7 +65,7 @@ class FirestoreCRUD {
     return result.docs[0]['registrationStatus'];
   }
 
-  Future<String?> getUserDP(String email) async {
+  Future<bool> isUserDpExist(String email) async {
     try {
       QuerySnapshot result = await FirebaseFirestore.instance
           .collection('users')
@@ -76,28 +76,26 @@ class FirestoreCRUD {
       if (result.docs.isNotEmpty) {
         final userDocument = result.docs[0].data() as Map<String, dynamic>;
 
-        if (userDocument.containsKey('userDP')) {
-          return userDocument['userDP'] as String?;
-        }
+        return userDocument['isUserDpExist'];
       }
 
-      return null; // Return null if the user or userDP field doesn't exist
+      return false; // Return null if the user or userDP field doesn't exist
     } catch (e) {
       print("Error fetching userDP: $e");
-      return null;
+      return false;
     }
   }
 
-  Future<String?> uploadFileToStorage(File file, String storagePath) async {
+  Future<String?> uploadFileToStorage(
+      File file, String storagePath, String email) async {
     try {
       final Reference storageReference =
           FirebaseStorage.instance.ref().child(storagePath);
 
       final UploadTask uploadTask = storageReference.putFile(file);
-
       final TaskSnapshot downloadUrl = await uploadTask.whenComplete(() {});
       final String fileUrl = await downloadUrl.ref.getDownloadURL();
-
+      addFieldsForEmail(email, {'isUserDpExist': true});
       return fileUrl; // Returns the URL of the uploaded file
     } catch (e) {
       print("Error uploading file: $e");
@@ -105,21 +103,35 @@ class FirestoreCRUD {
     }
   }
 
-  Future<String?> getFileDownloadUrl(String storagePath) async {
+  Future<String?> getFileDownloadUrl(String storagePath, String email) async {
+    if (await isUserDpExist(email) == false) {
+      return null;
+    }
+    final Reference storageReference;
     try {
-      final Reference storageReference =
-          FirebaseStorage.instance.ref().child(storagePath);
-
-      final String fileUrl = await storageReference.getDownloadURL();
-
-      return fileUrl; // Returns the URL of the file
+      print("finding dp");
+      storageReference = FirebaseStorage.instance.ref().child(storagePath);
+      print("printing");
+      print(FirebaseStorage.instance.ref().child(storagePath).toString());
+      // Returns the URL of the file
     } catch (e) {
       print("Error retrieving file: $e");
       return null;
     }
+
+    try {
+      final String fileUrl = await storageReference.getDownloadURL();
+      return fileUrl;
+    } catch (e) {
+      print('exception caught : ${e.toString()}');
+      return null;
+    }
   }
 
-  Future<bool> deleteFile(String storagePath) async {
+  Future<bool> deleteFile(String storagePath, String email) async {
+    if (await isUserDpExist(email) == false) {
+      return true;
+    }
     try {
       // Create a Firebase Storage reference to the file you want to delete.
       Reference storageReference =
@@ -127,7 +139,7 @@ class FirestoreCRUD {
 
       // Delete the file.
       await storageReference.delete();
-
+      await addFieldsForEmail(email, {'isUserDpExist': false});
       print('File deleted successfully');
       return true;
     } catch (e) {

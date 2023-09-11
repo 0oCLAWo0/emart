@@ -1,8 +1,15 @@
+import 'dart:io';
+
 import 'package:emart/auth_controller.dart';
 import 'package:emart/common_widgets.dart';
+import 'package:emart/firestore_crud.dart';
+import 'package:emart/manage_state.dart';
 import 'package:emart/screens/Seller/seller_homepage.dart';
+import 'package:emart/screens/Seller/settings/edit_name_page.dart';
+import 'package:emart/screens/Seller/settings/help_and_support.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class SellerSettings extends StatefulWidget {
   const SellerSettings({super.key});
@@ -18,10 +25,10 @@ class SellerSettingsState extends State<SellerSettings> {
   Color nameColor = const Color.fromARGB(255, 94, 158, 185);
   Color emailIconColor = const Color.fromARGB(255, 169, 167, 167);
   bool isButtonPressed = false;
-  ImageProvider userDP = SellerHomepageState.userDP;
   SellerHomepageState seller = SellerHomepageState();
   CommonWidgets common = CommonWidgets();
   FirebaseAuth auth = FirebaseAuth.instance;
+  FirestoreCRUD crud = FirestoreCRUD();
   User? user;
 
   Widget CreateListTile({
@@ -29,25 +36,27 @@ class SellerSettingsState extends State<SellerSettings> {
     required VoidCallback onTap,
     required IconData buttonIcon,
     required String title,
-    double hPad = 16.0,
+    double hPad = 6.0,
     double vPad = 0.0,
     String message = '',
+    bool isLongPress = false,
   }) {
     return ListTile(
       contentPadding: EdgeInsets.symmetric(
           horizontal: hPad, vertical: vPad), // Adjust padding here.
       leading: Icon(
         buttonIcon,
-        size: 26,
+        size: 25,
         color: !disableButton ? iconColor : Colors.white,
       ), // Replace with your first icon.
       title: Text(
         title,
         style: TextStyle(
           color: !disableButton ? iconColor : Colors.white,
-          fontSize: 18,
+          fontSize: 17,
         ),
       ),
+      onLongPress: isLongPress ? onTap : () {},
       onTap: disableButton
           ? () async {
               if (isButtonPressed) {
@@ -62,7 +71,9 @@ class SellerSettingsState extends State<SellerSettings> {
                 isButtonPressed = false;
               });
             }
-          : onTap,
+          : isLongPress
+              ? () {}
+              : onTap,
     );
   }
 
@@ -71,37 +82,50 @@ class SellerSettingsState extends State<SellerSettings> {
       alignment: Alignment.topRight,
       child: Container(
         width: 220,
-        height: 220,
-        margin: EdgeInsets.only(top: 70, right : 20),
+        height: 205,
+        margin: const EdgeInsets.only(top: 70, right: 20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-           border: Border.all(
+          border: Border.all(
             // Add this to specify a border
             color: Colors.blueGrey, // Set the border color
             width: 17.0, // Set the border width
           ),
         ),
         child: Drawer(
-          
           backgroundColor: Colors.white,
           child: ListView(
-             padding: EdgeInsets.zero,
+            padding: EdgeInsets.zero,
             children: [
               CreateListTile(
                   disableButton: false,
-                  onTap: () {},
+                  onTap: () {
+                    Get.back();
+                    Get.to(() => EditNamePage());
+                  },
                   buttonIcon: Icons.create,
                   title: 'Edit Name'),
               CreateListTile(
-                  disableButton: false,
-                  onTap: () {},
-                  buttonIcon: Icons.create,
-                  title: 'Edit Name'),
+                disableButton: false,
+                onTap: () {
+                  User? user = auth.currentUser;
+                  String storagePath = 'user_profile/${user!.uid}/userDP';
+                  crud.deleteFile(storagePath, user.email!);
+                  UserController.userDP.value =
+                      AssetImage('assets/userDP2.gif');
+                  Get.back();
+                },
+                isLongPress: true,
+                buttonIcon: Icons.delete,
+                title: 'Remove DP',
+              ),
               CreateListTile(
                   disableButton: false,
-                  onTap: () {},
-                  buttonIcon: Icons.create,
-                  title: 'Edit Name')
+                  onTap: () {
+                    AuthController.instance.logOut();
+                  },
+                  buttonIcon: Icons.logout,
+                  title: 'Logout')
             ],
           ),
         ),
@@ -127,7 +151,7 @@ class SellerSettingsState extends State<SellerSettings> {
                     onPressed: () {
                       Scaffold.of(context).openEndDrawer();
                     },
-                    icon: Icon(Icons.more_vert_rounded),
+                    icon: const Icon(Icons.more_vert_rounded),
                   );
                 },
               )
@@ -155,26 +179,50 @@ class SellerSettingsState extends State<SellerSettings> {
                         SizedBox(
                           height: 90,
                           width: 90,
-                          child: CircleAvatar(
-                            backgroundImage: userDP,
+                          child: GestureDetector(
+                            onLongPress: () async {
+                              print("tapped");
+                              String dpPath =
+                                  await common.getImageFromUser() ?? '';
+                              if (dpPath.isNotEmpty) {
+                                User? user = auth.currentUser;
+                                String storagePath =
+                                    'user_profile/${user!.uid}/userDP';
+                                crud.uploadFileToStorage(
+                                    File(dpPath), storagePath, user.email!);
+                                UserController.userDP.value =
+                                    FileImage(File(dpPath));
+                              }
+                            },
+                            child: Obx(() {
+                              return CircleAvatar(
+                                  backgroundImage: UserController.userDP.value);
+                            }),
                           ),
                         ),
                         // sized
                         const SizedBox(
-                          width: 20,
+                          width: 10,
                         ),
                         Column(children: [
                           const SizedBox(
-                            height: 9,
+                            height: 30,
                           ),
-                          common.getTitleText(
-                            '${user!.displayName!}',
-                            color: nameColor,
-                            fontSize: 25,
+                          SizedBox(
+                            width: 175,
+                            child: Center(
+                              child: Obx(() {
+                                return common.getTitleText(
+                                  UserController.displayName.value,
+                                  color: nameColor,
+                                  fontSize: 16,
+                                );
+                              }),
+                            ),
                           ),
                         ]),
                         const SizedBox(
-                          width: 80,
+                          width: 10,
                         ),
                         const SizedBox(
                           height: 90,
@@ -202,9 +250,9 @@ class SellerSettingsState extends State<SellerSettings> {
                           width: 6,
                         ),
                         common.getTitleText(
-                          user!.email!,
+                          user!.email ?? "",
                           color: emailColor,
-                          fontSize: 17,
+                          fontSize: 15,
                         ),
                       ],
                     ),
@@ -218,91 +266,71 @@ class SellerSettingsState extends State<SellerSettings> {
               (BuildContext context, int index) {
                 return Column(
                   children: [
+                    getContainerColoumn(
+                        title: 'Update Buisness Info', vpad: 30),
                     CreateListTile(
-                        buttonIcon: Icons.settings,
-                        title: 'Setting',
-                        disableButton: false,
-                        onTap: () {}),
-                    CreateListTile(
-                        buttonIcon: Icons.inventory,
-                        title: 'Inventory',
-                        disableButton: false,
+                        buttonIcon: Icons.contact_phone,
+                        title: 'Change Phone Number',
+                        disableButton: true,
                         message: 'Registration Pending',
                         onTap: () {}),
                     CreateListTile(
-                      buttonIcon: Icons.history,
-                      title: 'Order History',
-                      disableButton: true,
-                      message: 'Registration Pending',
-                      onTap: () {},
-                    ),
-                    CreateListTile(
-                        buttonIcon: Icons.business_sharp,
-                        title: 'Registration',
-                        disableButton: false,
-                        message:
-                            'Verification Status :\n\nCan\'t Register Again',
+                        buttonIcon: Icons.location_city,
+                        title: 'Edit Address',
+                        disableButton: true,
+                        message: 'Registration Pending',
                         onTap: () {}),
                     CreateListTile(
-                        buttonIcon: Icons.logout,
-                        title: 'Logout',
-                        disableButton: false,
+                        buttonIcon: Icons.type_specimen,
+                        title: 'Change Buisness Domain',
+                        disableButton: true,
+                        message: 'Registration Pending',
                         onTap: () {}),
                     CreateListTile(
-                        buttonIcon: Icons.logout,
-                        title: 'Logout',
+                        buttonIcon: Icons.smart_button,
+                        title: 'Change Delivery Type',
+                        disableButton: true,
+                        message: 'Registration Pending',
+                        onTap: () {}),
+                    getContainerColoumn(title: 'UPDATE LOCATION', vpad: 25),
+                    CreateListTile(
+                        buttonIcon: Icons.location_pin,
+                        title: 'Update Location',
+                        disableButton: true,
+                        message: 'Registration Pending',
+                        onTap: () {}),
+                    getContainerColoumn(title: 'ACCOUNT SETTINGS', vpad: 25),
+                    CreateListTile(
+                        buttonIcon: Icons.lock,
+                        title: 'Change Password',
                         disableButton: false,
+                        onTap: () {
+                          AuthController.instance.resetPassword(user!.email!);
+                        }),
+                    CreateListTile(
+                        buttonIcon: Icons.attach_email_rounded,
+                        title: 'Change Email',
+                        disableButton: true,
                         onTap: () {}),
                     CreateListTile(
-                        buttonIcon: Icons.logout,
-                        title: 'Logout',
-                        disableButton: false,
+                        buttonIcon: Icons.delete_forever,
+                        title: 'Delete Account',
+                        disableButton: true,
                         onTap: () {}),
+                    getContainerColoumn(title: 'SALES', vpad: 25),
                     CreateListTile(
-                        buttonIcon: Icons.logout,
-                        title: 'Logout',
-                        disableButton: false,
+                        buttonIcon: Icons.auto_graph,
+                        title: 'Sales',
+                        disableButton: true,
                         onTap: () {}),
+                    getContainerColoumn(title: 'HELP & SUPPORT', vpad: 25),
                     CreateListTile(
-                        buttonIcon: Icons.logout,
-                        title: 'Logout',
+                        buttonIcon: Icons.help_center,
+                        title: 'Help and Support',
                         disableButton: false,
-                        onTap: () {}),
-                    CreateListTile(
-                        buttonIcon: Icons.logout,
-                        title: 'Logout',
-                        disableButton: false,
-                        onTap: () {}),
-                    CreateListTile(
-                        buttonIcon: Icons.logout,
-                        title: 'Logout',
-                        disableButton: false,
-                        onTap: () {}),
-                    CreateListTile(
-                        buttonIcon: Icons.logout,
-                        title: 'Logout',
-                        disableButton: false,
-                        onTap: () {}),
-                    CreateListTile(
-                        buttonIcon: Icons.logout,
-                        title: 'Logout',
-                        disableButton: false,
-                        onTap: () {}),
-                    CreateListTile(
-                        buttonIcon: Icons.logout,
-                        title: 'Logout',
-                        disableButton: false,
-                        onTap: () {}),
-                    CreateListTile(
-                        buttonIcon: Icons.logout,
-                        title: 'Logout',
-                        disableButton: false,
-                        onTap: () {}),
-                    CreateListTile(
-                        buttonIcon: Icons.logout,
-                        title: 'Logout',
-                        disableButton: false,
-                        onTap: () {}),
+                        onTap: () {
+                          Get.to(() => HelpAndSupport());
+                        }),
                   ],
                 );
               },
@@ -311,6 +339,30 @@ class SellerSettingsState extends State<SellerSettings> {
           ),
         ],
       ),
+    );
+  }
+
+  Column getContainerColoumn({required String title, required double vpad}) {
+    return Column(
+      children: [
+        Container(
+          height: vpad,
+          margin: const EdgeInsets.only(left: 10, bottom: 5),
+          child: Align(
+              alignment: Alignment.bottomLeft,
+              child: Text(
+                title,
+                style: const TextStyle(
+                  color: Color.fromARGB(255, 212, 206, 207),
+                  fontSize: 15,
+                ),
+              )),
+        ),
+        Container(
+          color: emailIconColor,
+          height: 4,
+        ),
+      ],
     );
   }
 }

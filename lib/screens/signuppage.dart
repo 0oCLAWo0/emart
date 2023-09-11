@@ -21,6 +21,20 @@ class SignUpPageState extends State<SignUpPage> {
   CommonWidgets widgetBuilder = CommonWidgets();
   bool obscureText = true;
   bool isButtonPressed = false;
+  bool _mounted = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _mounted = true;
+  }
+
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -193,10 +207,13 @@ class SignUpPageState extends State<SignUpPage> {
       isButtonPressed = true;
     });
     await name();
-    await Future.delayed(Duration(seconds: 4)); // Wait for 2 seconds
-    setState(() {
-      isButtonPressed = false;
-    });
+    if(_mounted == false)
+    {
+       await Future.delayed(Duration(seconds: 4)); // Wait for 2 seconds
+      setState(() {
+        isButtonPressed = false;
+      });
+    }
   }
 
   Widget _buildTextButton(

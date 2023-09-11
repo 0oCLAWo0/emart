@@ -16,7 +16,6 @@ class OneTimeSplashScreenState extends State<OneTimeSplashScreen> {
     super.initState();
 
     print("splash screen");
-   // Introduce a delay of 3 seconds before calling directUser
     Future.delayed(const Duration(milliseconds: 2000), () {
       AuthController().directUser(); // Call your function here
     });

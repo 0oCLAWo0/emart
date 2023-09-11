@@ -22,6 +22,20 @@ class LoginPageState extends State<LoginPage> {
   bool obscureText = true;
   CommonWidgets widgetBuilder = CommonWidgets();
   bool isButtonPressed = false;
+  bool _mounted = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _mounted = true;
+  }
+
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,19 +133,22 @@ class LoginPageState extends State<LoginPage> {
                                 onTap: isButtonPressed
                                     ? null
                                     : () => _handleButtonTap(() async {
-                                           _handleLogin(context);
+                                          _handleLogin(context);
                                         }),
                                 child: CircleAvatar(
                                   radius: 30,
                                   backgroundColor:
                                       Color.fromARGB(255, 248, 160, 87),
-                                  child: isButtonPressed ? CircularProgressIndicator(
-                                    color:Color.fromARGB(255, 225, 235, 235),
-                                  ) : Icon(
-                                    Icons.arrow_forward,
-                                    color: Colors.white,
-                                    size: 35,
-                                  ),
+                                  child: isButtonPressed
+                                      ? CircularProgressIndicator(
+                                          color: Color.fromARGB(
+                                              255, 225, 235, 235),
+                                        )
+                                      : Icon(
+                                          Icons.arrow_forward,
+                                          color: Colors.white,
+                                          size: 35,
+                                        ),
                                 ),
                               ),
                             ],
@@ -149,7 +166,7 @@ class LoginPageState extends State<LoginPage> {
                                   return;
                                 }
                                 _handleButtonTap(() async {
-                                   _resetPassword(context);
+                                  _resetPassword(context);
                                 });
                               }),
                             ],
@@ -205,9 +222,12 @@ class LoginPageState extends State<LoginPage> {
       isButtonPressed = true;
     });
     await name();
-    await Future.delayed(Duration(seconds: 4)); // Wait for 2 seconds
-    setState(() {
-      isButtonPressed = false;
-    });
+
+    if (_mounted == false) {
+      await Future.delayed(Duration(seconds: 4)); // Wait for 2 seconds
+      setState(() {
+        isButtonPressed = false;
+      });
+    }
   }
 }

@@ -2,8 +2,10 @@
 // ignore: unused_import
 import 'package:emart/auth_controller.dart';
 import 'package:emart/firebase_options.dart';
+import 'package:emart/manage_state.dart';
 import 'package:emart/screens/Seller/registration.dart';
-import 'package:emart/screens/Seller/settings.dart';
+import 'package:emart/screens/Seller/settings/edit_name_page.dart';
+import 'package:emart/screens/Seller/settings/settings.dart';
 import 'package:emart/screens/buyer_homepage.dart';
 import 'package:emart/screens/mapScreen.dart';
 import 'package:emart/screens/multi_splash_screen.dart';
@@ -19,16 +21,13 @@ void main() async {
   print("Initializing");
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+    options: DefaultFirebaseOptions.currentPlatform, 
   );
-  //  final location = Location();
-  // await location.requestPermission();
-  // await location.changeSettings(
-  //   accuracy: LocationAccuracy.high,
-  //   interval: 10000, // 10 seconds
-  //);
-  print("inside main");
+ 
   Get.put(AuthController());
+  Get.put(UserController()); 
+
+  print("inside main");
 
   runApp(GetMaterialApp(
     initialRoute: '/splash_screen',
@@ -69,6 +68,10 @@ void main() async {
         name: '/sellerSettings',
         page: () => SellerSettings(),
       ),
+      GetPage(name: '/editNmaePage',
+       page: () => EditNamePage(),
+      ),
     ],
-  ));
+  ),
+  );
 }

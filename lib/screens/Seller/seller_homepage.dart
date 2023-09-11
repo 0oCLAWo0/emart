@@ -1,11 +1,12 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:ffi';
 
 import 'package:emart/auth_controller.dart';
 import 'package:emart/common_widgets.dart';
 import 'package:emart/firestore_crud.dart';
+import 'package:emart/manage_state.dart';
 import 'package:emart/screens/Seller/registration.dart';
-import 'package:emart/screens/Seller/settings.dart';
+import 'package:emart/screens/Seller/settings/settings.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -27,7 +28,6 @@ class SellerHomepageState extends State<SellerHomepage> {
   FirestoreCRUD crud = FirestoreCRUD();
   CommonWidgets common = CommonWidgets();
 
-  static ImageProvider userDP = const AssetImage('assets/userDP2.gif');
   Color orange = const Color.fromARGB(255, 183, 98, 45);
   Color highLighter = const Color.fromARGB(255, 160, 255, 223);
   Color blueGrey = Colors.blueGrey;
@@ -36,30 +36,15 @@ class SellerHomepageState extends State<SellerHomepage> {
   @override
   void initState() {
     super.initState();
-    fetchUserData();
     user = auth.currentUser;
+    UserController.displayName.value = user!.displayName!;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      UserController.userDP.value = (await common.fetchUserDP());
       registrationStatus = (await crud.getRegistrationStatus(user!.email!));
       setState(() {
         isUserRegistered = registrationStatus == 'verified' ? true : false;
       });
     });
-  }
-
-  Future<void> fetchUserData() async {
-    print("fetching dp");
-    user = auth.currentUser;
-    String? storagePath = 'user_profile/${user!.uid}/userDP';
-    String? userDPUrl = await crud.getFileDownloadUrl(storagePath);
-    print("fetched");
-    if (userDPUrl != null) {
-      setState(() {
-        print("setting dp state");
-        userDP = NetworkImage(userDPUrl);
-        print("set");
-      });
-    }
-    // Trigger a rebuild to display the fetched data
   }
 
   @override
@@ -111,40 +96,26 @@ class SellerHomepageState extends State<SellerHomepage> {
                       top: 27,
                       bottom: 10,
                     ),
-                    child: GestureDetector(
-                      onDoubleTap: () {
-                        User? user = auth.currentUser;
-                        String storagePath = 'user_profile/${user!.uid}/userDP';
-                        crud.deleteFile(storagePath);
-                        setState(() {
-                          userDP = const AssetImage('assets/userDP2.gif');
-                        });
-                      },
-                      onLongPress: () async {
-                        print("tapped");
-                        String dpPath = await common.getImageFromUser() ?? '';
-                        if (dpPath.isNotEmpty) {
-                          User? user = auth.currentUser;
-                          String storagePath =
-                              'user_profile/${user!.uid}/userDP';
-                          crud.uploadFileToStorage(File(dpPath), storagePath);
-                          setState(() {
-                            userDP = FileImage(File(dpPath));
-                          });
-                        }
-                      },
-                      child: CircleAvatar(
+                    child: Obx(() {
+                      return CircleAvatar(
                         radius: 40,
-                        backgroundImage: userDP,
-                      ),
-                    ),
+                        backgroundImage: UserController.userDP.value,
+                      );
+                    }),
                   ),
                   Container(
                     alignment: Alignment.centerLeft,
                     margin:
-                        const EdgeInsets.only(left: 37, bottom: 13, right: 10),
-                    child: common.getTitleText(user!.displayName!,
-                        color: highLighter),
+                        const EdgeInsets.only(left: 32, bottom: 13, right: 10),
+                    child: Obx(() {
+                      print("changing");
+                      print(
+                        UserController.displayName.value,
+                      );
+                      return common.getTitleText(
+                          UserController.displayName.value,
+                          color: highLighter);
+                    }),
                   ),
                 ],
               ),

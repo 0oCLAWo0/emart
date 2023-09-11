@@ -59,6 +59,7 @@ class AuthController extends GetxController {
           'name': user_name,
           'accountType': dropdownValue,
           'signupTimeStamp' : currentTime,
+          'isUserDpExist' : false,
           'registrationStatus' : 'onRequest',
         });
 
