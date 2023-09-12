@@ -76,7 +76,10 @@ class SignUpPageState extends State<SignUpPage> {
                           setState(() {
                             dropdownValue = newValue!;
                           });
-                        }),
+                        },
+                        itemList: <String>['Seller', 'Buyer'],
+                        dropDownValue: dropdownValue,
+                        ),
                         SizedBox(
                           height: 20,
                         ),

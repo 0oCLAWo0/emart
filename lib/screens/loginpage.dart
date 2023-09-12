@@ -6,7 +6,6 @@ import 'package:emart/screens/signuppage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-List<String> list = <String>['Seller', 'Buyer'];
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -84,7 +83,10 @@ class LoginPageState extends State<LoginPage> {
                             setState(() {
                               dropdownValue = newValue;
                             });
-                          }),
+                          },
+                          itemList: <String>['Seller', 'Buyer'],
+                          dropDownValue: dropdownValue!,
+                          ),
                           SizedBox(
                             height: 25,
                           ),

@@ -5,6 +5,7 @@ import 'package:emart/auth_controller.dart';
 import 'package:emart/common_widgets.dart';
 import 'package:emart/firestore_crud.dart';
 import 'package:emart/manage_state.dart';
+import 'package:emart/screens/Seller/inventory/inventory_page.dart';
 import 'package:emart/screens/Seller/registration.dart';
 import 'package:emart/screens/Seller/settings/settings.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -99,6 +100,7 @@ class SellerHomepageState extends State<SellerHomepage> {
                     child: Obx(() {
                       return CircleAvatar(
                         radius: 40,
+                        backgroundColor: orange,
                         backgroundImage: UserController.userDP.value,
                       );
                     }),
@@ -130,9 +132,11 @@ class SellerHomepageState extends State<SellerHomepage> {
             CreateListTile(
                 buttonIcon: Icons.inventory,
                 title: 'Inventory',
-                disableButton: !isUserRegistered,
+                disableButton: false,
                 message: 'Registration Pending',
-                onTap: () {}),
+                onTap: () {
+                  Get.to(() => InventoryPage());
+                }),
             CreateListTile(
               buttonIcon: Icons.history,
               title: 'Order History',

@@ -7,8 +7,6 @@ import 'package:location/location.dart';
 import 'package:marquee/marquee.dart';
 
 class CommonWidgets {
-  List<String> options = <String>['Seller', 'Buyer'];
-  String dropdownValue = "Seller";
   late String? imagePath; // Pass the selected image path to this widget
   FirebaseAuth auth = FirebaseAuth.instance;
   FirestoreCRUD crud = FirestoreCRUD();
@@ -33,9 +31,9 @@ class CommonWidgets {
 
   Widget buildDropDownButton({
     required void Function(String?) onChanged,
-    List<String>? itemList,
+    required List<String> itemList,
+    required String dropDownValue,
   }) {
-    itemList = itemList ?? options;
     return Container(
       height: 30,
       width: 80,
@@ -45,13 +43,12 @@ class CommonWidgets {
       ),
       child: Center(
         child: DropdownButton<String>(
-          value: dropdownValue,
+          value: dropDownValue,
           elevation: 16,
           underline: Container(
             color: Colors.transparent,
           ),
           onChanged: (newValue) {
-            dropdownValue = newValue!;
             onChanged(newValue);
           },
           items: itemList.map<DropdownMenuItem<String>>((String value) {
@@ -118,7 +115,7 @@ class CommonWidgets {
     String? storagePath = 'user_profile/${user!.uid}/userDP';
     try {
       String? userDPUrl =
-          await crud.getFileDownloadUrl(storagePath, user!.email!);
+          await crud.getFileDownloadUrl(storagePath, user.email!);
       if (userDPUrl != null) {
         userDP = NetworkImage(userDPUrl);
       } else {
