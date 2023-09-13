@@ -80,7 +80,6 @@ class FirestoreCRUD {
 
       return false; // Return null if the user or userDP field doesn't exist
     } catch (e) {
-      print("Error fetching userDP: $e");
       return false;
     }
   }
@@ -97,7 +96,6 @@ class FirestoreCRUD {
       addFieldsForEmail(email, {'isUserDpExist': true});
       return fileUrl; // Returns the URL of the uploaded file
     } catch (e) {
-      print("Error uploading file: $e");
       return null;
     }
   }
@@ -108,13 +106,9 @@ class FirestoreCRUD {
     }
     final Reference storageReference;
     try {
-      print("finding dp");
       storageReference = FirebaseStorage.instance.ref().child(storagePath);
-      print("printing");
-      print(FirebaseStorage.instance.ref().child(storagePath).toString());
       // Returns the URL of the file
     } catch (e) {
-      print("Error retrieving file: $e");
       return null;
     }
 
@@ -122,7 +116,6 @@ class FirestoreCRUD {
       final String fileUrl = await storageReference.getDownloadURL();
       return fileUrl;
     } catch (e) {
-      print('exception caught : ${e.toString()}');
       return null;
     }
   }
@@ -139,10 +132,8 @@ class FirestoreCRUD {
       // Delete the file.
       await storageReference.delete();
       await addFieldsForEmail(email, {'isUserDpExist': false});
-      print('File deleted successfully');
       return true;
     } catch (e) {
-      print('Error deleting file: $e');
       return false;
     }
   }
@@ -162,7 +153,6 @@ class FirestoreCRUD {
       }
       return false;
     } catch (e) {
-      print('Error adding fields: $e');
       return false;
     }
   }

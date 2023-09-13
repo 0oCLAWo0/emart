@@ -1,11 +1,10 @@
 // ignore_for_file: prefer_const_constructors
 
-import 'package:emart/auth_controller.dart';
+import 'package:emart/services/auth_controller.dart';
 import 'package:emart/common_widgets.dart';
 import 'package:emart/screens/signuppage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -17,23 +16,16 @@ class LoginPage extends StatefulWidget {
 class LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  CommonWidgets common = CommonWidgets();
   String? dropdownValue = "Seller";
   bool obscureText = true;
   CommonWidgets widgetBuilder = CommonWidgets();
   bool isButtonPressed = false;
-  bool _mounted = false;
+ 
 
   @override
   void initState() {
     super.initState();
-
-    _mounted = true;
-  }
-
-  @override
-  void dispose() {
-    _mounted = false;
-    super.dispose();
   }
 
   @override
@@ -79,13 +71,13 @@ class LoginPageState extends State<LoginPage> {
                                     ),
                           ),
                           widgetBuilder.buildDropDownButton(
-                              onChanged: (newValue) {
-                            setState(() {
-                              dropdownValue = newValue;
-                            });
-                          },
-                          itemList: <String>['Seller', 'Buyer'],
-                          dropDownValue: dropdownValue!,
+                            onChanged: (newValue) {
+                              setState(() {
+                                dropdownValue = newValue;
+                              });
+                            },
+                            itemList: <String>['Seller', 'Buyer'],
+                            dropDownValue: dropdownValue!,
                           ),
                           SizedBox(
                             height: 25,
@@ -188,8 +180,7 @@ class LoginPageState extends State<LoginPage> {
 
   void _handleLogin(BuildContext context) {
     if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      AuthController.instance
-          .showMessengerSnackBar(context, "All fields are Required");
+      common.showMessengerSnackBar(context, "All fields are Required");
     } else {
       AuthController.instance.login(emailController.text.trim(),
           passwordController.text.trim(), dropdownValue!);
@@ -198,8 +189,7 @@ class LoginPageState extends State<LoginPage> {
 
   void _resetPassword(BuildContext context) {
     if (emailController.text.isEmpty) {
-      AuthController.instance
-          .showMessengerSnackBar(context, "Please enter your email first.");
+      common.showMessengerSnackBar(context, "Please enter your email first.");
     } else {
       AuthController.instance.resetPassword(emailController.text.trim());
     }
@@ -223,13 +213,10 @@ class LoginPageState extends State<LoginPage> {
     setState(() {
       isButtonPressed = true;
     });
+    await Future.delayed(Duration(seconds: 4)); // Wait for 2 seconds
+    setState(() {
+      isButtonPressed = false;
+    });
     await name();
-
-    if (_mounted == false) {
-      await Future.delayed(Duration(seconds: 4)); // Wait for 2 seconds
-      setState(() {
-        isButtonPressed = false;
-      });
-    }
   }
 }

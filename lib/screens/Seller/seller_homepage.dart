@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:ffi';
 
-import 'package:emart/auth_controller.dart';
+import 'package:emart/Firestore/user_data_firestore.dart';
+import 'package:emart/services/auth_controller.dart';
 import 'package:emart/common_widgets.dart';
-import 'package:emart/firestore_crud.dart';
+import 'package:emart/Firestore/cloudstore_crud.dart';
 import 'package:emart/manage_state.dart';
 import 'package:emart/screens/Seller/inventory/inventory_page.dart';
 import 'package:emart/screens/Seller/registration.dart';
@@ -23,10 +23,10 @@ class SellerHomepageState extends State<SellerHomepage> {
   bool isMenuOpen = false; // Track whether the icon list is open or not.
   bool isUserRegistered = false;
   bool isButtonPressed = false;
-  String registrationStatus = 'onRequest';
   FirebaseAuth auth = FirebaseAuth.instance;
   User? user;
   FirestoreCRUD crud = FirestoreCRUD();
+  UserDataFirestore udCRUD = UserDataFirestore();
   CommonWidgets common = CommonWidgets();
 
   Color orange = const Color.fromARGB(255, 183, 98, 45);
@@ -40,17 +40,14 @@ class SellerHomepageState extends State<SellerHomepage> {
     user = auth.currentUser;
     UserController.displayName.value = user!.displayName!;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      UserController.userDP.value = (await common.fetchUserDP());
-      registrationStatus = (await crud.getRegistrationStatus(user!.email!));
-      setState(() {
-        isUserRegistered = registrationStatus == 'verified' ? true : false;
-      });
+    UserController.userDP.value = (await common.fetchUserDP());
+    UserController.registrationStatus.value =
+          (await udCRUD.getRegistrationStatus(user!.email!));
     });
   }
 
   @override
   Widget build(BuildContext context) {
-// Declare _timer as Timer? (nullable)
     return Scaffold(
       appBar: createAppbar(user),
       body: const Center(
@@ -78,91 +75,90 @@ class SellerHomepageState extends State<SellerHomepage> {
   Widget _buildIconList() {
     return SizedBox(
       width: 220,
-      child: Drawer(
-        backgroundColor: drawerColor,
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.zero,
-          children: [
-            Container(
-              color: orange,
-              padding: const EdgeInsets.only(top: 0),
-              child: Column(
-                children: [
-                  Container(
-                    height: 80,
-                    alignment: Alignment.topLeft,
-                    margin: const EdgeInsets.only(
-                      left: 23,
-                      top: 27,
-                      bottom: 10,
+      child: Obx(() {
+        return Drawer(
+          backgroundColor: drawerColor,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            children: [
+              Container(
+                color: orange,
+                padding: const EdgeInsets.only(top: 0),
+                child: Column(
+                  children: [
+                    Container(
+                      height: 80,
+                      alignment: Alignment.topLeft,
+                      margin: const EdgeInsets.only(
+                        left: 23,
+                        top: 27,
+                        bottom: 10,
+                      ),
+                      child: Obx(() {
+                        return CircleAvatar(
+                          radius: 40,
+                          backgroundColor: orange,
+                          backgroundImage: UserController.userDP.value,
+                        );
+                      }),
                     ),
-                    child: Obx(() {
-                      return CircleAvatar(
-                        radius: 40,
-                        backgroundColor: orange,
-                        backgroundImage: UserController.userDP.value,
-                      );
-                    }),
-                  ),
-                  Container(
-                    alignment: Alignment.centerLeft,
-                    margin:
-                        const EdgeInsets.only(left: 32, bottom: 13, right: 10),
-                    child: Obx(() {
-                      print("changing");
-                      print(
-                        UserController.displayName.value,
-                      );
-                      return common.getTitleText(
+                    Container(
+                      alignment: Alignment.centerLeft,
+                      margin: const EdgeInsets.only(
+                          left: 32, bottom: 13, right: 10),
+                      child: common.getTitleText(
                           UserController.displayName.value,
-                          color: highLighter);
-                    }),
-                  ),
-                ],
+                          color: highLighter),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            CreateListTile(
-                buttonIcon: Icons.settings,
-                title: 'Setting',
-                disableButton: false,
-                onTap: () {
-                  Get.to(() => const SellerSettings());
-                }),
-            CreateListTile(
-                buttonIcon: Icons.inventory,
-                title: 'Inventory',
-                disableButton: false,
+              CreateListTile(
+                  buttonIcon: Icons.settings,
+                  title: 'Setting',
+                  disableButton: false,
+                  onTap: () {
+                    Get.to(() => const SellerSettings());
+                  }),
+              CreateListTile(
+                  buttonIcon: Icons.inventory,
+                  title: 'Inventory',
+                  disableButton: false,
+                  message: 'Registration Pending',
+                  onTap: () {
+                    Get.to(() => const InventoryPage());
+                  }),
+              CreateListTile(
+                buttonIcon: Icons.history,
+                title: 'Order History',
+                disableButton: !isUserRegistered,
                 message: 'Registration Pending',
-                onTap: () {
-                  Get.to(() => InventoryPage());
-                }),
-            CreateListTile(
-              buttonIcon: Icons.history,
-              title: 'Order History',
-              disableButton: !isUserRegistered,
-              message: 'Registration Pending',
-              onTap: () {},
-            ),
-            CreateListTile(
-                buttonIcon: Icons.business_sharp,
-                title: 'Registration',
-                disableButton: registrationStatus != 'onRequest' ? true : false,
-                message:
-                    'Verification Status : $registrationStatus\n\nCan\'t Register Again',
-                onTap: () {
-                  Get.to(() => const BuisnessRegistraion());
-                }),
-            CreateListTile(
-                buttonIcon: Icons.logout,
-                title: 'Logout',
-                disableButton: false,
-                onTap: () {
-                  AuthController.instance.logOut();
-                }),
-          ],
-        ),
-      ),
+                onTap: () {},
+              ),
+              CreateListTile(
+                  buttonIcon: Icons.business_sharp,
+                  title: 'Registration',
+                  disableButton:
+                      UserController.registrationStatus.value != 'onRequest'
+                          ? true
+                          : false,
+                  message:
+                      'Verification Status : ${UserController.registrationStatus.value}\n\nCan\'t Register Again',
+                  onTap: () {
+                    Get.to(() => const BuisnessRegistraion());
+                  }),
+              CreateListTile(
+                  buttonIcon: Icons.logout,
+                  title: 'Logout',
+                  disableButton: false,
+                  onTap: () {
+                    AuthController.instance.logOut();
+                  }),
+            ],
+          ),
+        );
+      }),
     );
   }
 
@@ -199,8 +195,8 @@ class SellerHomepageState extends State<SellerHomepage> {
               setState(() {
                 isButtonPressed = true;
               });
-              AuthController.instance.showMessengerSnackBar(context, message);
-              await Future.delayed(Duration(seconds: 2));
+              common.showMessengerSnackBar(context, message);
+              await Future.delayed(const Duration(seconds: 2));
               setState(() {
                 isButtonPressed = false;
               });

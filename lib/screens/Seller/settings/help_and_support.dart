@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class HelpAndSupport extends StatelessWidget {
@@ -46,7 +45,7 @@ class HelpAndSupport extends StatelessWidget {
                           children: [
                              createRowOfAnswer(
                                 'To set Profile Image Long press\n on your Profile In settings'),
-                            SizedBox(height: 10,),
+                            const SizedBox(height: 10,),
                              createRowOfAnswer(
                                 'To Delete Profile Image Long press\n on your REMOVE DP\nButton inside settings'),   
                                 

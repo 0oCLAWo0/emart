@@ -3,7 +3,7 @@
 import 'package:emart/screens/loginpage.dart';
 import 'package:flutter/material.dart';
 import 'package:emart/common_widgets.dart'; // Import the common widget
-import 'package:emart/auth_controller.dart';
+import 'package:emart/services/auth_controller.dart';
 import 'package:get/get.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -17,23 +17,15 @@ class SignUpPageState extends State<SignUpPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  CommonWidgets common = CommonWidgets();
   String dropdownValue = 'Seller'; // Initialize with the default value
   CommonWidgets widgetBuilder = CommonWidgets();
   bool obscureText = true;
   bool isButtonPressed = false;
-  bool _mounted = false;
-
   @override
   void initState() {
     super.initState();
 
-    _mounted = true;
-  }
-
-  @override
-  void dispose() {
-    _mounted = false;
-    super.dispose();
   }
 
   @override
@@ -72,13 +64,13 @@ class SignUpPageState extends State<SignUpPage> {
                     child: Column(
                       children: [
                         widgetBuilder.buildDropDownButton(
-                            onChanged: (newValue) {
-                          setState(() {
-                            dropdownValue = newValue!;
-                          });
-                        },
-                        itemList: <String>['Seller', 'Buyer'],
-                        dropDownValue: dropdownValue,
+                          onChanged: (newValue) {
+                            setState(() {
+                              dropdownValue = newValue!;
+                            });
+                          },
+                          itemList: <String>['Seller', 'Buyer'],
+                          dropDownValue: dropdownValue,
                         ),
                         SizedBox(
                           height: 20,
@@ -146,12 +138,18 @@ class SignUpPageState extends State<SignUpPage> {
           context,
           'Sign up',
           () {
-            isButtonPressed ? null : _handleButtonTap(() => _handleSignUp(context));
+            isButtonPressed
+                ? null
+                : _handleButtonTap(() => _handleSignUp(context));
           },
           Color(0xff4c505b),
         ),
         SizedBox(height: 20),
-        _buildTextButton(context, 'Sign in', () => Get.offAll(() => LoginPage()),),
+        _buildTextButton(
+          context,
+          'Sign in',
+          () => Get.offAll(() => LoginPage()),
+        ),
       ],
     );
   }
@@ -193,14 +191,13 @@ class SignUpPageState extends State<SignUpPage> {
     if (nameController.text.isEmpty ||
         emailController.text.isEmpty ||
         passwordController.text.isEmpty) {
-      AuthController.instance
-          .showMessengerSnackBar(context, "All fields are required");
+      common.showMessengerSnackBar(context, "All fields are required");
     } else {
       AuthController.instance.register(
-        user_name: nameController.text.trim(),
-        email_id: emailController.text.trim(),
-        user_password: passwordController.text.trim(),
-        dropdownValue: dropdownValue,
+        userName: nameController.text.trim(),
+        emailID: emailController.text.trim(),
+        userPassword: passwordController.text.trim(),
+        accountType: dropdownValue,
       );
     }
   }
@@ -209,14 +206,12 @@ class SignUpPageState extends State<SignUpPage> {
     setState(() {
       isButtonPressed = true;
     });
-    await name();
-    if(_mounted == false)
-    {
-       await Future.delayed(Duration(seconds: 4)); // Wait for 2 seconds
+    await Future.delayed(Duration(seconds: 4)); // Wait for 2 seconds
       setState(() {
         isButtonPressed = false;
       });
-    }
+    await name();
+    
   }
 
   Widget _buildTextButton(

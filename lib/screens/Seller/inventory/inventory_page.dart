@@ -10,8 +10,8 @@ class InventoryPage extends StatefulWidget {
 }
 
 class _InventoryPageState extends State<InventoryPage> {
-  @override
   Color pageColor = const Color.fromARGB(255, 183, 98, 45);
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: pageColor,

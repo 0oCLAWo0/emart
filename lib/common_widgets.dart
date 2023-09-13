@@ -1,4 +1,4 @@
-import 'package:emart/firestore_crud.dart';
+import 'package:emart/Firestore/cloudstore_crud.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -68,11 +68,9 @@ class CommonWidgets {
 
     if (pickedFile != null) {
       // User selected an image
-      print("Selected image path: ${pickedFile.path}");
       return pickedFile.path;
       // You can now do something with the selected image path, e.g., display it in an Image widget.
     } else {
-      print("No image selected");
       return null;
     }
   }
@@ -119,29 +117,31 @@ class CommonWidgets {
       if (userDPUrl != null) {
         userDP = NetworkImage(userDPUrl);
       } else {
-        userDP = AssetImage('assets/userDP2.gif');
+        userDP = const AssetImage('assets/userDP2.gif');
       }
     } catch (e) {
-      print("DP NOT FOUND");
-      userDP = AssetImage('assets/userDP2.gif');
+      userDP = const AssetImage('assets/userDP2.gif');
     }
-
     return userDP;
   }
 
   // fetch user's current location
   Future<LatLng?> getCurrentLocation() async {
-    print("started");
     Location location = Location();
     LocationData currentLocationData;
 
     try {
-      print("getting");
       currentLocationData = await location.getLocation();
       return LatLng(
           currentLocationData.latitude!, currentLocationData.longitude!);
     } catch (e) {
       return null;
     }
+  }
+
+
+  void showMessengerSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(duration: const Duration(seconds: 3), content: Text(message)));
   }
 }

@@ -1,16 +1,16 @@
 // ignore_for_file: avoid_print
 
-import 'package:emart/auth_controller.dart';
+import 'package:emart/services/auth_controller.dart';
 import 'package:flutter/material.dart';
 
-class OneTimeSplashScreen extends StatefulWidget {
-  const OneTimeSplashScreen({Key? key}) : super(key: key);
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({Key? key}) : super(key: key);
 
   @override
-  OneTimeSplashScreenState createState() => OneTimeSplashScreenState();
+  SplashScreenState createState() => SplashScreenState();
 }
 
-class OneTimeSplashScreenState extends State<OneTimeSplashScreen> {
+class SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();

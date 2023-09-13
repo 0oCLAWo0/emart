@@ -1,72 +1,68 @@
-// ignore_for_file: prefer_const_constructors, unnecessary_import, avoid_print
-// ignore: unused_import
-import 'package:emart/auth_controller.dart';
-import 'package:emart/firebase_options.dart';
+
+import 'package:emart/services/auth_controller.dart';
+import 'package:emart/services/firebase_options.dart';
 import 'package:emart/manage_state.dart';
 import 'package:emart/screens/Seller/registration.dart';
 import 'package:emart/screens/Seller/settings/edit_name_page.dart';
 import 'package:emart/screens/Seller/settings/settings.dart';
 import 'package:emart/screens/buyer_homepage.dart';
-import 'package:emart/screens/mapScreen.dart';
-import 'package:emart/screens/multi_splash_screen.dart';
-import 'package:emart/screens/onetime_splash_screen.dart';
+import 'package:emart/screens/map_screen.dart';
+import 'package:emart/screens/splash_screen.dart';
 import 'package:emart/screens/Seller/seller_homepage.dart';
 import 'package:emart/screens/loginpage.dart';
 import 'package:emart/screens/signuppage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
-  print("Initializing");
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform, 
   );
  
   Get.put(AuthController());
-  Get.put(UserController()); 
+  Get.put(UserController());
 
-  print("inside main");
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  UserController.accountType.value = prefs.getString('accountType')!; 
+
 
   runApp(GetMaterialApp(
     initialRoute: '/splash_screen',
     getPages: [
       GetPage(
-        name: '/Multi_splash_screen',
-        page: () => MultiTimeSplashScreen(),
-      ),
-      GetPage(
         name: '/splash_screen',
-        page: () => OneTimeSplashScreen(),
+        page: () => const SplashScreen(),
       ),
       GetPage(
         name: '/login',
-        page: () => LoginPage(),
+        page: () => const LoginPage(),
       ),
       GetPage(
         name: '/signup',
-        page: () => SignUpPage(),
+        page: () => const SignUpPage(),
       ),
       GetPage(
         name: '/buyerHomePage',
-        page: () => BuyerHomepage(),
+        page: () => const BuyerHomepage(),
       ),
       GetPage(
         name: '/sellerHomePage',
-        page: () => SellerHomepage(),
+        page: () => const SellerHomepage(),
       ),
        GetPage(
         name: '/buisnessRegistration',
-        page: () => BuisnessRegistraion(),
+        page: () => const BuisnessRegistraion(),
       ),
       GetPage(
         name: '/googleMap',
-        page: () => GoogleMapWidget(),
+        page: () => const GoogleMapWidget(),
       ),
       GetPage(
         name: '/sellerSettings',
-        page: () => SellerSettings(),
+        page: () => const SellerSettings(),
       ),
       GetPage(name: '/editNmaePage',
        page: () => EditNamePage(),

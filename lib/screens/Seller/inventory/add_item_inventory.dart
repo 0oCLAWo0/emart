@@ -1,6 +1,5 @@
 import 'package:emart/common_widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 final _formKey = GlobalKey<FormState>();
@@ -149,7 +148,6 @@ class _AddItemToInventoryState extends State<AddItemToInventory> {
               TextButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      print("validate");
                     }
                   },
                   child: Container(

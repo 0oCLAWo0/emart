@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:emart/auth_controller.dart';
+import 'package:emart/services/auth_controller.dart';
 import 'package:emart/common_widgets.dart';
-import 'package:emart/firestore_crud.dart';
+import 'package:emart/Firestore/cloudstore_crud.dart';
 import 'package:emart/manage_state.dart';
 import 'package:emart/screens/Seller/seller_homepage.dart';
 import 'package:emart/screens/Seller/settings/edit_name_page.dart';
@@ -31,7 +31,7 @@ class SellerSettingsState extends State<SellerSettings> {
   FirestoreCRUD crud = FirestoreCRUD();
   User? user;
 
-  Widget CreateListTile({
+  Widget createListTile({
     required bool disableButton,
     required VoidCallback onTap,
     required IconData buttonIcon,
@@ -65,7 +65,7 @@ class SellerSettingsState extends State<SellerSettings> {
               setState(() {
                 isButtonPressed = true;
               });
-              AuthController.instance.showMessengerSnackBar(context, message);
+              common.showMessengerSnackBar(context, message);
               await Future.delayed(const Duration(seconds: 2));
               setState(() {
                 isButtonPressed = false;
@@ -97,7 +97,7 @@ class SellerSettingsState extends State<SellerSettings> {
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
-              CreateListTile(
+              createListTile(
                   disableButton: false,
                   onTap: () {
                     Get.back();
@@ -105,21 +105,21 @@ class SellerSettingsState extends State<SellerSettings> {
                   },
                   buttonIcon: Icons.create,
                   title: 'Edit Name'),
-              CreateListTile(
+              createListTile(
                 disableButton: false,
                 onTap: () {
                   User? user = auth.currentUser;
                   String storagePath = 'user_profile/${user!.uid}/userDP';
                   crud.deleteFile(storagePath, user.email!);
                   UserController.userDP.value =
-                      AssetImage('assets/userDP2.gif');
+                      const AssetImage('assets/userDP2.gif');
                   Get.back();
                 },
                 isLongPress: true,
                 buttonIcon: Icons.delete,
                 title: 'Remove DP',
               ),
-              CreateListTile(
+              createListTile(
                   disableButton: false,
                   onTap: () {
                     AuthController.instance.logOut();
@@ -181,7 +181,6 @@ class SellerSettingsState extends State<SellerSettings> {
                           width: 90,
                           child: GestureDetector(
                             onLongPress: () async {
-                              print("tapped");
                               String dpPath =
                                   await common.getImageFromUser() ?? '';
                               if (dpPath.isNotEmpty) {
@@ -268,68 +267,68 @@ class SellerSettingsState extends State<SellerSettings> {
                   children: [
                     getContainerColoumn(
                         title: 'Update Buisness Info', vpad: 30),
-                    CreateListTile(
+                    createListTile(
                         buttonIcon: Icons.contact_phone,
                         title: 'Change Phone Number',
                         disableButton: true,
                         message: 'Registration Pending',
                         onTap: () {}),
-                    CreateListTile(
+                    createListTile(
                         buttonIcon: Icons.location_city,
                         title: 'Edit Address',
                         disableButton: true,
                         message: 'Registration Pending',
                         onTap: () {}),
-                    CreateListTile(
+                    createListTile(
                         buttonIcon: Icons.type_specimen,
                         title: 'Change Buisness Domain',
                         disableButton: true,
                         message: 'Registration Pending',
                         onTap: () {}),
-                    CreateListTile(
+                    createListTile(
                         buttonIcon: Icons.smart_button,
                         title: 'Change Delivery Type',
                         disableButton: true,
                         message: 'Registration Pending',
                         onTap: () {}),
                     getContainerColoumn(title: 'UPDATE LOCATION', vpad: 25),
-                    CreateListTile(
+                    createListTile(
                         buttonIcon: Icons.location_pin,
                         title: 'Update Location',
                         disableButton: true,
                         message: 'Registration Pending',
                         onTap: () {}),
                     getContainerColoumn(title: 'ACCOUNT SETTINGS', vpad: 25),
-                    CreateListTile(
+                    createListTile(
                         buttonIcon: Icons.lock,
                         title: 'Change Password',
                         disableButton: false,
                         onTap: () {
                           AuthController.instance.resetPassword(user!.email!);
                         }),
-                    CreateListTile(
+                    createListTile(
                         buttonIcon: Icons.attach_email_rounded,
                         title: 'Change Email',
                         disableButton: true,
                         onTap: () {}),
-                    CreateListTile(
+                    createListTile(
                         buttonIcon: Icons.delete_forever,
                         title: 'Delete Account',
                         disableButton: true,
                         onTap: () {}),
                     getContainerColoumn(title: 'SALES', vpad: 25),
-                    CreateListTile(
+                    createListTile(
                         buttonIcon: Icons.auto_graph,
                         title: 'Sales',
                         disableButton: true,
                         onTap: () {}),
                     getContainerColoumn(title: 'HELP & SUPPORT', vpad: 25),
-                    CreateListTile(
+                    createListTile(
                         buttonIcon: Icons.help_center,
                         title: 'Help and Support',
                         disableButton: false,
                         onTap: () {
-                          Get.to(() => HelpAndSupport());
+                          Get.to(() => const HelpAndSupport());
                         }),
                   ],
                 );

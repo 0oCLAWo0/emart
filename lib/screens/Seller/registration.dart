@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:emart/auth_controller.dart';
+import 'package:emart/Firestore/user_data_firestore.dart';
+import 'package:emart/services/auth_controller.dart';
 import 'package:emart/common_widgets.dart';
-import 'package:emart/firestore_crud.dart';
-import 'package:emart/screens/mapScreen.dart';
+import 'package:emart/manage_state.dart';
+import 'package:emart/screens/map_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -100,7 +101,6 @@ class BuisnessRegistraionState extends State<BuisnessRegistraion> {
                           onPressed: () {
                             setState(() {
                               isTnCAccepted = !isTnCAccepted;
-                              print(isTnCAccepted);
                             });
                           },
                           icon: isTnCAccepted
@@ -112,9 +112,7 @@ class BuisnessRegistraionState extends State<BuisnessRegistraion> {
                                   size: 20,
                                 )),
                       TextButton(
-                          onPressed: () {
-                            print('terms and condition');
-                          },
+                          onPressed: () {},
                           style: ButtonStyle(
                             padding:
                                 MaterialStateProperty.all<EdgeInsetsGeometry>(
@@ -151,7 +149,7 @@ class BuisnessRegistraionState extends State<BuisnessRegistraion> {
                       addressController.text.isEmpty ||
                       contactController.text.isEmpty ||
                       homeDeliveryController.text.isEmpty) {
-                    AuthController.instance.showMessengerSnackBar(
+                    common.showMessengerSnackBar(
                         context, 'ALL FIELDS ARE REQUIRED');
                   } else if (selectedLocation == null) {
                     AuthController.instance.showSnackbar(
@@ -168,7 +166,7 @@ class BuisnessRegistraionState extends State<BuisnessRegistraion> {
                   } else {
                     // Get the current date and time
                     Timestamp currentTime = Timestamp.now();
-                    FirestoreCRUD crud = FirestoreCRUD();
+                    UserDataFirestore udCRUD = UserDataFirestore();
                     User? user = FirebaseAuth.instance.currentUser;
                     Map<String, dynamic> map = {
                       'buisnessType': buisnessTypeController.text,
@@ -180,38 +178,40 @@ class BuisnessRegistraionState extends State<BuisnessRegistraion> {
                       'latitude': selectedLocation!.latitude,
                       'isRegistered': true,
                       'registrationTimeStamp': currentTime,
-                      'registrationStatus' : 'pending',
+                      'registrationStatus': 'pending',
                     };
 
                     isRegistered =
-                        await crud.addFieldsForEmail(user!.email!, map);
+                        await udCRUD.addFieldsForEmail(user!.email!, map);
                     if (isRegistered == true) {
-                      print("showsnackbar");
+
+                      UserController.registrationStatus.value = 'pending';
+                      setState(() {
+                        buttonTapped = false;
+                      });
+                      Get.back();
+                      await Future.delayed(const Duration(seconds: 2));
                       AuthController.instance.showSnackbar(
                         'Registration Success',
                         'We will verify your request with in 5-7 working days',
                         'REGISTRATION SUCCESSFUL',
                         Colors.greenAccent,
                       );
-                      await Future.delayed(Duration(seconds: 2));
-                      setState(() {
-                        buttonTapped = false;
-                      });
-                      AuthController.instance.directUser();
                     }
-                  } // Wait for 2 seconds
-                  if (isRegistered == false) {
+                    else {
                     AuthController.instance.showSnackbar(
                       'Registration failed',
                       'Please Try Again Later',
                       'Something Went Wrong',
                       Colors.redAccent,
                     );
-                    await Future.delayed(Duration(seconds: 2));
+                    await Future.delayed(const Duration(seconds: 2));
                     setState(() {
                       buttonTapped = false;
                     });
                   }
+                  } // Wait for 2 seconds
+                 
                 },
                 child: Container(
                   margin: const EdgeInsets.only(top: 15),

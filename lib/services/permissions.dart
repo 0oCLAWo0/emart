@@ -4,7 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 class LocationPermissionDialog extends StatelessWidget {
   final VoidCallback onPermissionGranted;
 
-  LocationPermissionDialog({required this.onPermissionGranted});
+  const LocationPermissionDialog({super.key, required this.onPermissionGranted});
 
   Future<void> _handleLocationPermission(BuildContext context) async {
     final status = await Permission.location.request();
@@ -17,12 +17,12 @@ class LocationPermissionDialog extends StatelessWidget {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("Location Permission Required"),
-            content: Text(
+            title: const Text("Location Permission Required"),
+            content: const Text(
                 "Please enable location permission in settings to use this feature."),
             actions: <Widget>[
               TextButton(
-                child: Text("OK"),
+                child: const Text("OK"),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },

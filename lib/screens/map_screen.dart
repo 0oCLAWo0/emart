@@ -35,7 +35,6 @@ class GoogleMapWidgetState extends State<GoogleMapWidget> {
           Get.back();
         }
         currentLocation = temp ?? currentLocation;
-        print("done");
       });
     }
   }
@@ -46,10 +45,18 @@ class GoogleMapWidgetState extends State<GoogleMapWidget> {
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 132, 180, 101),
         title: const Text('Pick Your Location'),
+        actions: [
+          IconButton(
+              onPressed: () {
+                Get.back();
+              },
+              icon: const Icon(Icons.check))
+        ],
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator(
-            backgroundColor: const Color.fromARGB(255, 132, 180, 101),
+          ? const Center(
+              child: CircularProgressIndicator(
+              backgroundColor: Color.fromARGB(255, 132, 180, 101),
             ))
           : GoogleMap(
               initialCameraPosition: CameraPosition(
@@ -62,11 +69,9 @@ class GoogleMapWidgetState extends State<GoogleMapWidget> {
                 });
               },
               onTap: (position) {
-                print("tapped");
                 setState(() {
                   selectedLocation = position;
                   BuisnessRegistraionState.selectedLocation = position;
-                  print(selectedLocation);
                 });
               },
 

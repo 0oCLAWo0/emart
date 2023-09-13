@@ -1,4 +1,3 @@
-import 'package:emart/auth_controller.dart';
 import 'package:emart/common_widgets.dart';
 import 'package:emart/manage_state.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,6 +8,8 @@ class EditNamePage extends StatelessWidget {
   FirebaseAuth auth = FirebaseAuth.instance;
   final TextEditingController nameController = TextEditingController();
   CommonWidgets common = CommonWidgets();
+
+  EditNamePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -29,14 +30,10 @@ class EditNamePage extends StatelessWidget {
                 await user!.updateDisplayName(nameController.text.toString());
                 }
                 catch(e){
-                  AuthController.instance.showMessengerSnackBar(context, 'Check Your Network Connection\nOR Try Again Later');
+                  common.showMessengerSnackBar(context, 'Check Your Network Connection\nOR Try Again Later');
                 }
 
                 user = auth.currentUser;
-                print("changing");
-                print(
-                  UserController.displayName.value,
-                );
                 UserController.displayName.value = user!.displayName!;
               }
             },
